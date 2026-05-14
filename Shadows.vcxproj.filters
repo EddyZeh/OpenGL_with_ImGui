@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{fa6b84df-2571-4d57-a8b7-5ea678118109}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{1c61dc8d-a66b-4039-a292-db6f231ab305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{d287f96d-1a09-4de8-ac47-f7957510efbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Models">
+      <UniqueIdentifier>{2842bd20-b201-43b2-bae0-3067f5736109}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="Joystick.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="material.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="screen.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="glMemory.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="Joystick.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="cube.hpp">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="material.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="lamp.hpp">
+      <Filter>Models</Filter>
+    </ClInclude>
+    <ClInclude Include="screen.h">
+      <Filter>io</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cube.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="cube.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="lamp.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="lamp.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="wood.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="wood.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="depthMap.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="depthMap.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="debugDepthQuad.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="debugDepthQuad.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shadows.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shadows.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="cubemap.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="cubemap.geom">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="cubemap.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include=".gitignore">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
