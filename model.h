@@ -1,0 +1,30 @@
+#pragma once
+
+#ifndef MODEL_H
+#define MODEL_H
+
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+
+#include "mesh.h"
+
+class Model {
+public:
+	glm::vec3 pos;
+	glm::vec3 size;
+	Model(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f));
+
+	virtual void render(Shader& shader);
+	std::vector<Mesh> meshes;
+	std::vector<Texture> textures_loaded;
+
+private:
+	std::string directory;
+	
+	void loadModel(std::string path);
+	void processNode(aiNode* node, const aiScene* scene);
+	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type);
+};
+
+#endif // !MODEL_H

@@ -124,11 +124,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Joystick.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="material.cpp" />
+    <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="model.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="screen.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -142,6 +146,9 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="lamp.hpp" />
     <ClInclude Include="material.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="model.h" />
+    <ClInclude Include="modelarray.hpp" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="screen.h" />
     <ClInclude Include="Shader.h" />
@@ -155,6 +162,7 @@
     <None Include="debugDepthQuad.vert" />
     <None Include="depthMap.frag" />
     <None Include="depthMap.vert" />
+    <None Include="instanced.vert" />
     <None Include="lamp.frag" />
     <None Include="lamp.vert" />
     <None Include="cubemap.frag" />

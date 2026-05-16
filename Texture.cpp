@@ -6,8 +6,8 @@
 
 Texture::Texture() { }
 
-Texture::Texture(std::string dir, std::string path, bool gammaCorrection) 
-				: dir(dir), path(path), gammaCorrection(gammaCorrection){
+Texture::Texture(std::string dir, std::string path, aiTextureType type, bool gammaCorrection) 
+				: dir(dir), path(path), type(type), gammaCorrection(gammaCorrection){
 	generate();
 }
 

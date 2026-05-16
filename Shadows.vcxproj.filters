@@ -21,6 +21,9 @@
     <Filter Include="Models">
       <UniqueIdentifier>{2842bd20-b201-43b2-bae0-3067f5736109}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IMGUI">
+      <UniqueIdentifier>{0f0fb250-5e31-46ec-8a3c-ed8e950bd69b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -49,6 +52,18 @@
     </ClCompile>
     <ClCompile Include="screen.cpp">
       <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="backends\imgui_impl_glfw.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="backends\imgui_impl_opengl3.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +99,15 @@
     </ClInclude>
     <ClInclude Include="screen.h">
       <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="modelarray.hpp">
+      <Filter>Models</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +158,9 @@
     </None>
     <None Include=".gitignore">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="instanced.vert">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

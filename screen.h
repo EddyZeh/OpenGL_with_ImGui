@@ -15,6 +15,8 @@ public:
 	static unsigned int SCR_WIDTH;
 	static unsigned int SCR_HEIGHT;
 
+	GLFWwindow* window;
+
 	static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 	Screen();
@@ -31,8 +33,6 @@ public:
 	bool shouldClose();
 	void setShouldClose(bool shouldClose);
 
-private:
-	GLFWwindow* window;
 };
 
 #endif // !SCREEN_H

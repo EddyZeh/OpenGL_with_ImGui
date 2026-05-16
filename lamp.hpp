@@ -5,7 +5,7 @@
 
 class Lamp : public Cube {
 public:
-	Lamp(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f), Material mat = Material::white_plastic)
+	Lamp(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(0.2f), Material mat = Material::white_plastic)
 		: Cube(pos, size, mat){	}
 
 	void render(Shader& shader) override {
@@ -19,8 +19,33 @@ public:
 		shader.set3Float("material.specular", material.specular);
 		shader.setFloat("material.shininess", material.shininess);
 		
-		VAO.bind();
-		VAO.draw(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		meshes[0].VAO.bind();
+		meshes[0].VAO.draw(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	}
+};
+
+
+class LampArray : public ModelArray<Lamp>{
+
+
+public:
+	std::vector<glm::vec3> pointLightPos;
+
+	void init() {
+		model = new Lamp();
+		ModelArray::init();
+	}
+
+	void render(Shader& shader) {
+		positions.clear();
+		sizes.clear();
+
+		for (auto pl : pointLightPos) {
+			positions.push_back(pl);
+			sizes.push_back(model->size);
+		}
+
+		ModelArray::render(shader, false);
 	}
 };
 
