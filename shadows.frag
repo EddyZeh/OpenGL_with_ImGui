@@ -14,6 +14,7 @@ struct Material{
 };
 uniform Material material;
 
+#define MAX_POINT_LIGHTS 2
 struct PointLight{
     vec3 position;
 
@@ -21,10 +22,8 @@ struct PointLight{
     vec3 diffuse;
     vec3 specular;
 };
-
-#define MAX_POINT_LIGHTS 2
-
-uniform PointLight pointLights[2];
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
+uniform int noPointLights;
 
 uniform samplerCube depthMaps[MAX_POINT_LIGHTS];
 
@@ -34,7 +33,19 @@ uniform vec3 viewPos;
 uniform float far_plane;
 uniform bool shadows;
 
+float ShadowCalculation(int i, vec3 fragPos);
 vec3 PointLightCalc(int i, vec3 norm);
+
+void main(){  
+    vec3 norm = normalize(fs_in.Normal);
+   vec3 result = vec3(0.0);
+
+   for(int i = 0; i < noPointLights; i++){
+        result += PointLightCalc(i, norm);
+   }
+    
+    FragColor =vec4(result, 1.0f);
+}
 
 float ShadowCalculation(int i, vec3 fragPos){
     vec3 fragToLight = fragPos - pointLights[i].position;
@@ -56,17 +67,6 @@ float ShadowCalculation(int i, vec3 fragPos){
         }
     shadow /= (samples * samples * samples);
     return shadow;
-}
-
-void main(){  
-    vec3 norm = normalize(fs_in.Normal);
-   vec3 result = vec3(0.0);
-
-   for(int i = 0; i < MAX_POINT_LIGHTS; i++){
-        result += PointLightCalc(i, norm);
-   }
-    
-    FragColor =vec4(result, 1.0f);
 }
 
 vec3 PointLightCalc(int i, vec3 norm){

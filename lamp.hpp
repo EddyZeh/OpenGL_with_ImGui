@@ -5,7 +5,7 @@
 
 class Lamp : public Cube {
 public:
-	Lamp(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(0.2f), Material mat = Material::white_plastic)
+	Lamp(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(0.5f), Material mat = Material::white_plastic)
 		: Cube(pos, size, mat){	}
 
 	void render(Shader& shader) override {
