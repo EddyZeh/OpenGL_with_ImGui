@@ -45,7 +45,7 @@ public:
 			sizes.push_back(model->size);
 		}
 
-		ModelArray::render(shader, false);
+		ModelArray::render(shader);
 	}
 };
 

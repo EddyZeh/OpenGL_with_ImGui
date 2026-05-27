@@ -32,10 +32,7 @@ public:
 		}
 	}
 
-	void render(Shader& shader, bool setList = true) {
-		if (setList) {
-
-		}
+	void render(Shader& shader) {
 
 		model->render(shader);
 

@@ -9,14 +9,22 @@ in VS_OUT {
 
 struct Material{
     sampler2D diffuseTexture;
-    sampler2D spcularTexture;
+    sampler2D specularTexture;
+
+    vec3 diffuseColor;
+    vec3 specularColor;
+
     float shininess;
 };
 uniform Material material;
 
-#define MAX_POINT_LIGHTS 2
+#define MAX_POINT_LIGHTS 16
 struct PointLight{
     vec3 position;
+
+    float constant;
+    float linear;
+    float quadratic;
 
     vec3 ambient;
     vec3 diffuse;
@@ -32,6 +40,7 @@ uniform vec3 viewPos;
 
 uniform float far_plane;
 uniform bool shadows;
+uniform bool noTex;
 
 float ShadowCalculation(int i, vec3 fragPos);
 vec3 PointLightCalc(int i, vec3 norm);
@@ -70,16 +79,37 @@ float ShadowCalculation(int i, vec3 fragPos){
 }
 
 vec3 PointLightCalc(int i, vec3 norm){
-    vec3 ambient = pointLights[i].ambient * texture(material.diffuseTexture, fs_in.TexCoords).rgb;
+
+    vec3 diffuseColor;
+    vec3 specularColor;
+
+    if(noTex){
+        diffuseColor = material.diffuseColor;
+        specularColor = material.specularColor;
+    }
+    else{
+        diffuseColor = texture(material.diffuseTexture, fs_in.TexCoords).rgb;
+        specularColor = texture(material.specularTexture, fs_in.TexCoords).rgb;
+    }
+
+    vec3 ambient = pointLights[i].ambient * diffuseColor;
 
     vec3 lightDir = normalize(pointLights[i].position - fs_in.FragPos);
     float diff = max(dot(lightDir, norm), 0.0);
-    vec3 diffuse = pointLights[i].diffuse * (diff * vec3(texture(material.diffuseTexture, fs_in.TexCoords)));
+    vec3 diffuse = pointLights[i].diffuse * (diff * diffuseColor);
 
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
-    vec3 specular = pointLights[i].specular * (spec * vec3(texture(material.spcularTexture, fs_in.TexCoords)));
+    vec3 specular = pointLights[i].specular * (spec * specularColor);
+
+    // attenuation
+    float dist = length(pointLights[i].position - fs_in.FragPos);
+    float attenuation = 1.0 / ((pointLights[i].constant) + (pointLights[i].linear * dist) + (pointLights[i].quadratic * (dist * dist)));
+
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
 
     float shadow = shadows? ShadowCalculation(i, fs_in.FragPos) : 0.0;
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));

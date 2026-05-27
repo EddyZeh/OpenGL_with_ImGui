@@ -20,12 +20,13 @@ class Cube : public Model {
 public:
     Material material;
     std::vector<Texture> textures;
+    bool noTex;
 
     Cube(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f), Material material = Material::emerald)
-			: Model(pos,size), material(material) {    }
+        : Model(pos, size), material(material), noTex(true), textures({}) {}
 
     Cube(glm::vec3 pos = glm::vec3(0.0f), glm::vec3 size = glm::vec3(1.0f), std::vector<Texture> textures = { })
-            : Model(pos,size), textures(textures) {       }
+            : Model(pos,size), textures(textures), noTex(false), material(Material::emerald) {       }
     void init() {
         int noVertices = 36;
         float vertices[] = {
@@ -93,17 +94,23 @@ public:
         shader.set3Float("pointLight.specular", Material::white_plastic.specular);
 
         // material properties
-        shader.setFloat("material.shininess", 64.0f);
-        shader.setInt("material.diffuse", 0);
-        shader.setInt("material.specular", 1);
-        for (int i = 0; i < textures.size(); i++) {
-            glActiveTexture(GL_TEXTURE0 + i);
-            textures[i].bind();
+
+        if (noTex) {
+            shader.setBool("noTex", noTex);
+            shader.set3Float("material.diffuseColor", material.diffuse);
+            shader.set3Float("material.specularColor", material.specular);
+        }
+        else {
+            shader.setBool("noTex", noTex);
+            shader.setFloat("material.shininess", 64.0f);
+            shader.setInt("material.diffuseTexture", 0);
+            shader.setInt("material.specularTexture", 1);
+            for (int i = 0; i < textures.size(); i++) {
+                glActiveTexture(GL_TEXTURE0 + i);
+                textures[i].bind();
+            }
         }
 
-
-        //meshes[0].VAO.bind();
-        //meshes[0].VAO.draw(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     }
 
     void cleanup() {
@@ -123,6 +130,11 @@ public:
         ModelArray::init();
     }
 
+    void init(Material material) {
+        model = new Cube(glm::vec3(0.0f), glm::vec3(1.0f), material);
+        ModelArray::init();
+    }
+
     void render(Shader& shader) {
         positions.clear();
         sizes.clear();
@@ -132,7 +144,7 @@ public:
             sizes.push_back(CI.sizes);
         }
 
-        ModelArray::render(shader, false);
+        ModelArray::render(shader);
     }
 };
 

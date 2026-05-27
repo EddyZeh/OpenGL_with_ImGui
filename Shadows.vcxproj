@@ -152,6 +152,7 @@
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="screen.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="sphere.hpp" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>

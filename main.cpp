@@ -25,6 +25,7 @@
 
 #include "cube.hpp"
 #include "lamp.hpp"
+#include "sphere.hpp"
 
 void processInput(float deltaTime);
 void renderQuad();
@@ -102,7 +103,7 @@ int main() {
 	CubeArray roomCube;
 	std::vector<Texture> tex = { woodTex };
 	roomCube.init(tex);
-	roomCube.cubeInstances.push_back({glm::vec3(0.0f, -0.5f, 0.0f), glm::vec3(6.0f)});
+	roomCube.cubeInstances.push_back({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f)});
 
 
 	std::vector<glm::vec3> cubesPos = {
@@ -124,6 +125,19 @@ int main() {
 	lamps.pointLightPos.push_back(glm::vec3(0.0f));
 	lamps.pointLightPos.push_back(glm::vec3(0.4f, -2.0f, 2.0f));
 	
+
+	std::vector<glm::vec3> spheresPos = {
+		glm::vec3(0.0f, 1.5f, 1.0f),
+		glm::vec3(-2.0f, 0.0f, -1.0f)
+	};
+
+	std::vector<glm::vec3> spheresSizes = { glm::vec3(1.0f), glm::vec3(0.5f) };
+	SphereArray spheres;
+	spheres.init(Material::emerald);
+
+	for (int i = 0; i < 2; i++) {
+		spheres.sphereInstances.push_back({spheresPos[i], spheresSizes[i]});
+	}
 
 	float woodVertices[] = {
 		// positions            // normals         // texcoords
@@ -247,6 +261,7 @@ int main() {
 			cubemapShader.set3Float("lightPos", lightPos);
 			roomCube.render(cubemapShader);
 			cubes.render(cubemapShader);
+			spheres.render(cubemapShader);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
@@ -274,8 +289,11 @@ int main() {
 			instancedShader.set3Float("pointLights[" + std::to_string(i) + "].position", lamps.pointLightPos[i]);
 			instancedShader.set3Float("pointLights[" + std::to_string(i) + "].ambient", Material::white_plastic.ambient);
 			instancedShader.set3Float("pointLights[" + std::to_string(i) + "].diffuse", Material::white_plastic.diffuse);
-			instancedShader.set3Float("pointLights[" + std::to_string(i) + "].specular", Material::white_plastic.specular);
+			instancedShader.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
+			instancedShader.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09f);
+			instancedShader.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.032f);
 		}
+
 		glActiveTexture(GL_TEXTURE0);
 		woodTex.bind();
 		for (int i = 0; i < lamps.pointLightPos.size(); i++) {
@@ -288,6 +306,7 @@ int main() {
 		roomCube.render(instancedShader);
 		instancedShader.setInt("reverse_normals", 0);
 		cubes.render(instancedShader);
+		spheres.render(instancedShader);
 
 		lampShader2.activate();
 		lampShader2.setMat4("view", view);
@@ -306,6 +325,7 @@ int main() {
 		screen.newFrame();
 	}
 	cubes.cleanup();
+	spheres.cleanup();
 	roomCube.cleanup();
 	lamps.cleanup();
 
