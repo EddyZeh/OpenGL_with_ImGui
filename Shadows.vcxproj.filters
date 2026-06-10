@@ -117,9 +117,6 @@
     <None Include="lamp.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="lamp.vert">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="debugDepthQuad.vert">
       <Filter>Shaders</Filter>
     </None>

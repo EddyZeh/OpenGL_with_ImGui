@@ -122,8 +122,8 @@ int main() {
 
 	LampArray lamps;
 	lamps.init();
-	//lamps.pointLightPos.push_back(glm::vec3(0.0f));
-	lamps.pointLightPos.push_back(glm::vec3(0.4f, -2.0f, 2.0f));
+	lamps.pointLightPos.push_back(glm::vec3(0.0f));
+	//lamps.pointLightPos.push_back(glm::vec3(0.4f, -2.0f, 2.0f));
 	
 
 	std::vector<glm::vec3> spheresPos = {
@@ -274,6 +274,7 @@ int main() {
 		
 
 		// RENDERING
+		glEnable(GL_DEPTH_TEST);
 		screen.update();
 
 		// 1st PASS (Rendering DepthMap) ======================
@@ -324,8 +325,7 @@ int main() {
 		// END ==================================
 		
 		// RESET VIEWPORT
-		/*glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		glEnable(GL_DEPTH_TEST);*/
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		screen.update();
 
 		// 2nd PASS (Rendering normal scene)
@@ -379,7 +379,7 @@ int main() {
 
 		ArrayObject::clear();
 
-		/*glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 
@@ -388,7 +388,7 @@ int main() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		fboShader.setInt("screenTexture", 0);
-		glDrawArrays(GL_TRIANGLES, 0, 6);*/
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// Render ImGui
 		ImGui::Render();

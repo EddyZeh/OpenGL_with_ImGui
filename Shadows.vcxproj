@@ -163,7 +163,6 @@
     <None Include="FBO.vert" />
     <None Include="object.vert" />
     <None Include="lamp.frag" />
-    <None Include="lamp.vert" />
     <None Include="cubemap.frag" />
     <None Include="cubemap.geom" />
     <None Include="cubemap.vert" />
