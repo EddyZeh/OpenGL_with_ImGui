@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="cube.hpp" />
+    <ClInclude Include="framebuffer.hpp" />
     <ClInclude Include="glMemory.hpp" />
     <ClInclude Include="Joystick.h" />
     <ClInclude Include="Keyboard.h" />

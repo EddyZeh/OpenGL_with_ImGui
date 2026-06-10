@@ -1,7 +1,7 @@
 #include "model.h"
 
-Model::Model(glm::vec3 pos, glm::vec3 size)
-			: pos(pos), size(size){ }
+Model::Model(glm::vec3 pos, glm::vec3 size, bool noTex)
+			: pos(pos), size(size), noTex(noTex){ }
 
 void Model::render(Shader& shader) {
 	glm::mat4 model = glm::mat4(1.0f);

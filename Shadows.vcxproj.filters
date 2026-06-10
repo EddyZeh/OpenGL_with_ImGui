@@ -18,11 +18,11 @@
     <Filter Include="io">
       <UniqueIdentifier>{d287f96d-1a09-4de8-ac47-f7957510efbc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Models">
-      <UniqueIdentifier>{2842bd20-b201-43b2-bae0-3067f5736109}</UniqueIdentifier>
-    </Filter>
     <Filter Include="IMGUI">
       <UniqueIdentifier>{0f0fb250-5e31-46ec-8a3c-ed8e950bd69b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\Models">
+      <UniqueIdentifier>{2842bd20-b201-43b2-bae0-3067f5736109}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -89,13 +89,13 @@
       <Filter>io</Filter>
     </ClInclude>
     <ClInclude Include="cube.hpp">
-      <Filter>Models</Filter>
+      <Filter>graphics\Models</Filter>
     </ClInclude>
     <ClInclude Include="material.h">
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="lamp.hpp">
-      <Filter>Models</Filter>
+      <Filter>graphics\Models</Filter>
     </ClInclude>
     <ClInclude Include="screen.h">
       <Filter>io</Filter>
@@ -107,10 +107,13 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="modelarray.hpp">
-      <Filter>Models</Filter>
+      <Filter>graphics\Models</Filter>
     </ClInclude>
     <ClInclude Include="sphere.hpp">
-      <Filter>Models</Filter>
+      <Filter>graphics\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="framebuffer.hpp">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
