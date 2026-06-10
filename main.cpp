@@ -28,7 +28,6 @@
 #include "sphere.hpp"
 
 void processInput(float deltaTime);
-void renderQuad();
 
 
 const unsigned int SCR_WIDTH  = 800;
@@ -82,9 +81,10 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	// SHADERS
+	Shader shader("object.vert", "shadows.frag");
+	Shader lampShader("object.vert", "lamp.frag");
 	Shader cubemapShader("cubemap.vert", "cubemap.frag", "cubemap.geom");
-	Shader instancedShader("instanced.vert", "shadows.frag");
-	Shader lampShader2("instanced.vert", "lamp.frag");
+	Shader fboShader("FBO.vert", "FBO.frag");
 
 	// TEXTURES
 	Texture containerTex("assets", "container2.png");
@@ -107,7 +107,7 @@ int main() {
 
 
 	std::vector<glm::vec3> cubesPos = {
-		glm::vec3(0.0f, 1.5f, 0.0f),
+		glm::vec3(0.0f, 1.5f, -1.5f),
 		glm::vec3(2.0f, 0.0f, 1.0f),
 		glm::vec3(-1.0f, 0.0f, 2.0f)
 	};
@@ -122,12 +122,12 @@ int main() {
 
 	LampArray lamps;
 	lamps.init();
-	lamps.pointLightPos.push_back(glm::vec3(0.0f));
+	//lamps.pointLightPos.push_back(glm::vec3(0.0f));
 	lamps.pointLightPos.push_back(glm::vec3(0.4f, -2.0f, 2.0f));
 	
 
 	std::vector<glm::vec3> spheresPos = {
-		glm::vec3(0.0f, 1.5f, 1.0f),
+		glm::vec3(-1.0f, 1.5f, 1.0f),
 		glm::vec3(-2.0f, 0.0f, -1.0f)
 	};
 
@@ -138,6 +138,9 @@ int main() {
 	for (int i = 0; i < 2; i++) {
 		spheres.sphereInstances.push_back({spheresPos[i], spheresSizes[i]});
 	}
+
+	Model m(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f));
+	m.loadModel("assets/models/lotr_troll/scene.gltf");
 
 	float woodVertices[] = {
 		// positions            // normals         // texcoords
@@ -150,6 +153,7 @@ int main() {
 		 10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
 	};
 
+
 	ArrayObject VAO;
 	VAO.generate();
 	VAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
@@ -159,6 +163,26 @@ int main() {
 	VAO["VBO"].setAttPointer<float>(0, 3, GL_FLOAT, 8, 0);
 	VAO["VB0"].setAttPointer<float>(1, 3, GL_FLOAT, 8, 3);
 	VAO["VB0"].setAttPointer<float>(2, 2, GL_FLOAT, 8, 6);
+
+	float quadVertices[] = {
+		// positions		// texCoords
+		-1.0f,  1.0f,		0.0f, 1.0f,
+		-1.0f, -1.0f,		0.0f, 0.0f,
+		 1.0f, -1.0f,		1.0f, 0.0f,
+
+		-1.0f,  1.0f,		0.0f, 1.0f,
+		 1.0f, -1.0f,		1.0f, 0.0f,
+		 1.0f,  1.0f,		1.0f, 1.0f
+	};
+
+	ArrayObject fboVAO;
+	fboVAO.generate();
+	fboVAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
+	fboVAO.bind();
+	fboVAO["VBO"].bind();
+	fboVAO["VBO"].setData<float>(sizeof(quadVertices) / sizeof(quadVertices[0]), quadVertices, GL_STATIC_DRAW);
+	fboVAO["VBO"].setAttPointer<float>(0, 2, GL_FLOAT, 4, 0);
+	fboVAO["VBO"].setAttPointer<float>(1, 2, GL_FLOAT, 4, 2);
 
 	ArrayObject::clear();
 
@@ -193,6 +217,32 @@ int main() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
+	// New framebuffer
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screen.SCR_WIDTH, screen.SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, screen.SCR_WIDTH, screen.SCR_HEIGHT);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "Framebuffer not complete!" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	mainJ.update();
 	if (mainJ.isPresent()) {
 		std::cout << mainJ.getName() << " is present." << std::endl;
@@ -201,8 +251,11 @@ int main() {
 		std::cout << "Not present." << std::endl;
 	}
 
-	instancedShader.activate();
-	instancedShader.setInt("diffuseTexture", 0);
+	shader.activate();
+	shader.setInt("diffuseTexture", 0);
+
+	fboShader.activate();
+	fboShader.setInt("screenTexture", 0);
 
 	// MAIN LOOP
 	while (!screen.shouldClose()) {
@@ -256,18 +309,23 @@ int main() {
 			glClear(GL_DEPTH_BUFFER_BIT);
 			cubemapShader.activate();
 			for (unsigned int face = 0; face < 6; ++face)
-				cubemapShader.setMat4("shadowMatrices[" + std::to_string(face) + "]", shadowTransforms[i]);
+				cubemapShader.setMat4("shadowMatrices[" + std::to_string(face) + "]", shadowTransforms[face]);
 			cubemapShader.setFloat("far_plane", far_plane);
 			cubemapShader.set3Float("lightPos", lightPos);
+			cubemapShader.setBool("instanced", true);
 			roomCube.render(cubemapShader);
 			cubes.render(cubemapShader);
 			spheres.render(cubemapShader);
+			cubemapShader.setBool("instanced", false);
+			m.render(cubemapShader);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		// END ==================================
 		
 		// RESET VIEWPORT
+		/*glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glEnable(GL_DEPTH_TEST);*/
 		screen.update();
 
 		// 2nd PASS (Rendering normal scene)
@@ -277,45 +335,60 @@ int main() {
 		projection = glm::perspective(glm::radians(Camera::defaultCamera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.f);
 
 
-		instancedShader.activate();
-		instancedShader.setMat4("view", view);
-		instancedShader.setMat4("projection", projection);
+		shader.activate();
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
 
-		instancedShader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
-		instancedShader.setInt("shadows", shadows);
-		instancedShader.setFloat("far_plane", far_plane);
-		instancedShader.setInt("noPointLights", static_cast<int>(lamps.pointLightPos.size()));
+		shader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
+		shader.setInt("shadows", shadows);
+		shader.setFloat("far_plane", far_plane);
+		shader.setInt("noPointLights", static_cast<int>(lamps.pointLightPos.size()));
 		for (int i = 0; i < lamps.pointLightPos.size(); i++) {
-			instancedShader.set3Float("pointLights[" + std::to_string(i) + "].position", lamps.pointLightPos[i]);
-			instancedShader.set3Float("pointLights[" + std::to_string(i) + "].ambient", Material::white_plastic.ambient);
-			instancedShader.set3Float("pointLights[" + std::to_string(i) + "].diffuse", Material::white_plastic.diffuse);
-			instancedShader.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
-			instancedShader.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09f);
-			instancedShader.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.032f);
+			shader.set3Float("pointLights[" + std::to_string(i) + "].position", lamps.pointLightPos[i]);
+			shader.set3Float("pointLights[" + std::to_string(i) + "].ambient", Material::white_plastic.ambient);
+			shader.set3Float("pointLights[" + std::to_string(i) + "].diffuse", Material::white_plastic.diffuse);
+			shader.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
+			shader.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09f);
+			shader.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.032f);
 		}
 
 		glActiveTexture(GL_TEXTURE0);
 		woodTex.bind();
 		for (int i = 0; i < lamps.pointLightPos.size(); i++) {
 			glActiveTexture(GL_TEXTURE2 + i);
-			instancedShader.setInt("depthMaps[" + std::to_string(i) + "]", i + 2);
+			shader.setInt("depthMaps[" + std::to_string(i) + "]", i + 2);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemaps[i]);
 		}
 
-		instancedShader.setInt("reverse_normals", 1);
-		roomCube.render(instancedShader);
-		instancedShader.setInt("reverse_normals", 0);
-		cubes.render(instancedShader);
-		spheres.render(instancedShader);
+		shader.setBool("instanced", true);
+		shader.setInt("reverse_normals", 1);
+		roomCube.render(shader);
+		shader.setInt("reverse_normals", 0);
+		cubes.render(shader);
+		spheres.render(shader);
+		shader.setBool("instanced", false);
+		shader.setBool("noTex", false);
+		m.render(shader);
 
-		lampShader2.activate();
-		lampShader2.setMat4("view", view);
-		lampShader2.setMat4("projection", projection);
-		lampShader2.setInt("reverse_normals", 0);
-		lamps.render(lampShader2);
-		
+		lampShader.activate();
+		lampShader.setMat4("view", view);
+		lampShader.setMat4("projection", projection);
+		lampShader.setInt("reverse_normals", 0);
+		lampShader.setBool("instanced", true);
+		lamps.render(lampShader);
 
 		ArrayObject::clear();
+
+		/*glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+
+		fboShader.activate();
+		fboVAO.bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		fboShader.setInt("screenTexture", 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);*/
 
 		// Render ImGui
 		ImGui::Render();
@@ -328,6 +401,9 @@ int main() {
 	spheres.cleanup();
 	roomCube.cleanup();
 	lamps.cleanup();
+	glDeleteFramebuffers(1, &depthMapFBO);
+	glDeleteFramebuffers(1, &fbo);
+	glDeleteRenderbuffers(1, &rbo);
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -429,29 +505,4 @@ void processInput(float deltaTime){
 		double dy = ry * sensitivity * deltaTime;
 		Camera::defaultCamera.updateCameraDirection(dx, dy);
 	}
-}
-
-ArrayObject quadVAO;
-void renderQuad(){
-	if (!quadInit) {
-		quadInit = true;
-		float quadVertices[] = {
-			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		};
-		int noElements = sizeof(quadVertices) / sizeof(quadVertices[0]);
-		quadVAO.generate();
-		quadVAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
-		quadVAO.bind();
-		quadVAO["VBO"].bind();
-		quadVAO["VBO"].setData<float>(noElements, quadVertices, GL_STATIC_DRAW);
-		quadVAO["VBO"].setAttPointer<float>(0, 3, GL_FLOAT, 5, 0);
-		quadVAO["VBO"].setAttPointer<float>(1, 2, GL_FLOAT, 5, 3);
-	}
-	quadVAO.bind();
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	ArrayObject::clear();
 }

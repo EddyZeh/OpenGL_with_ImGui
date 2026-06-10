@@ -4,6 +4,7 @@ layout (location = 3) in vec3 aOffset;
 layout (location = 4) in vec3 aSize;
 
 uniform mat4 model;
+uniform bool instanced;
 
 out vec4 FragPos;
 
@@ -16,5 +17,8 @@ void main(){
 
 	instancedModel[3] += vec4(aOffset, 0.0);
 
-	FragPos = instancedModel * vec4(aPos, 1.0);
+	if(instanced)
+		FragPos = instancedModel * vec4(aPos, 1.0);
+	else
+		FragPos = model * vec4(aPos, 1.0);
 }

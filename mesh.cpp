@@ -41,10 +41,10 @@ void Mesh::render(Shader& shader) {
 		std::string name;
 		switch (textures[i].type) {
 		case aiTextureType_DIFFUSE:
-			name = "diffuse" + std::to_string(i);
+			name = "diffuseColor";
 			break;
 		case aiTextureType_SPECULAR:
-			name = "specular" + std::to_string(i);
+			name = "specularColor";
 			break;
 
 		default:

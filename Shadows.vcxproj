@@ -157,22 +157,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="cube.frag" />
-    <None Include="cube.vert" />
     <None Include="debugDepthQuad.frag" />
     <None Include="debugDepthQuad.vert" />
-    <None Include="depthMap.frag" />
-    <None Include="depthMap.vert" />
-    <None Include="instanced.vert" />
+    <None Include="FBO.frag" />
+    <None Include="FBO.vert" />
+    <None Include="object.vert" />
     <None Include="lamp.frag" />
     <None Include="lamp.vert" />
     <None Include="cubemap.frag" />
     <None Include="cubemap.geom" />
     <None Include="cubemap.vert" />
     <None Include="shadows.frag" />
-    <None Include="shadows.vert" />
-    <None Include="wood.frag" />
-    <None Include="wood.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

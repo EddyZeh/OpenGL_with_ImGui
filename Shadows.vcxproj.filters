@@ -114,37 +114,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cube.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="cube.frag">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="lamp.frag">
       <Filter>Shaders</Filter>
     </None>
     <None Include="lamp.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="wood.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="wood.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="depthMap.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="depthMap.frag">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="debugDepthQuad.vert">
       <Filter>Shaders</Filter>
     </None>
     <None Include="debugDepthQuad.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shadows.vert">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shadows.frag">
@@ -162,7 +141,13 @@
     <None Include=".gitignore">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="instanced.vert">
+    <None Include="object.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="FBO.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="FBO.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
