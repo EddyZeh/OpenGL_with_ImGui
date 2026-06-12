@@ -150,5 +150,11 @@
     <None Include="FBO.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="bright.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="blur.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -61,6 +61,10 @@ void Mesh::render(Shader& shader) {
 	VAO.draw(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
 }
 
+void Mesh::cleanup() {
+	VAO.cleanup();
+}
+
 void Mesh::setupMesh() {
 	VAO.generate();
 

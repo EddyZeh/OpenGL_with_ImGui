@@ -63,6 +63,7 @@ int main() {
 		return -1;
 	}
 
+	glEnable(GL_DEPTH_TEST);
 	screen.setParamters();
 
 	// Create IMGUI context
@@ -134,7 +135,7 @@ int main() {
 
 	std::vector<glm::vec3> spheresSizes = { glm::vec3(1.0f), glm::vec3(0.5f) };
 	SphereArray spheres;
-	spheres.init(Material::emerald);
+	spheres.init(Material::turquoise);
 
 	for (int i = 0; i < 2; i++) {
 		spheres.sphereInstances.push_back({spheresPos[i], spheresSizes[i]});
@@ -217,10 +218,10 @@ int main() {
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	FramebufferObject fb(screen.SCR_WIDTH, screen.SCR_HEIGHT, GL_COLOR_BUFFER_BIT);
-	fb.generate();
-	fb.allocateAndAttachTexture(GL_COLOR_ATTACHMENT0, GL_RGB, GL_UNSIGNED_BYTE);
-	fb.attachRBO(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
+	FramebufferObject fbo(screen.SCR_WIDTH, screen.SCR_HEIGHT, GL_COLOR_BUFFER_BIT);
+	fbo.generate();
+	fbo.allocateAndAttachTexture(GL_COLOR_ATTACHMENT0, GL_RGB, GL_UNSIGNED_BYTE);
+	fbo.attachRBO(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
 	FramebufferObject::bindDefault();
 
 	mainJ.update();
@@ -301,12 +302,11 @@ int main() {
 			m.render(cubemapShader);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
 		// END ==================================
 		
 		// RESET VIEWPORT
-		fb.bind();
-		fb.setViewport();
+		fbo.bind();
+		fbo.setViewport();
 		screen.update();
 
 		// 2nd PASS (Rendering normal scene)
@@ -348,7 +348,6 @@ int main() {
 		cubes.render(shader);
 		spheres.render(shader);
 		shader.setBool("instanced", false);
-		shader.setBool("noTex", false);
 		m.render(shader);
 
 		lampShader.activate();
@@ -361,16 +360,20 @@ int main() {
 		ArrayObject::clear();
 
 		FramebufferObject::bindDefault();
-		fb.clear();
+		fbo.clear();
 		glDisable(GL_DEPTH_TEST);
 
 		fboShader.activate();
 		fboVAO.bind();
-		for (unsigned int i = 0; i < fb.textures.size(); i++) {
+		for (unsigned int i = 0; i < fbo.textures.size(); i++) {
 			glActiveTexture(GL_TEXTURE0 + i);
-			fb.textures[i].bind();
+			fbo.textures[i].bind();
 		}
 		fboShader.setInt("screenTexture", 0);
+		float screenWidth = static_cast<float>(screen.SCR_WIDTH);
+		float screenHeight = static_cast<float>(screen.SCR_HEIGHT);
+		fboShader.setFloat("screenWidth", screenWidth);
+		fboShader.setFloat("screenHeight", screenHeight);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// Render ImGui
@@ -385,7 +388,7 @@ int main() {
 	roomCube.cleanup();
 	lamps.cleanup();
 	glDeleteFramebuffers(1, &depthMapFBO);
-	fb.cleanup();
+	fbo.cleanup();
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

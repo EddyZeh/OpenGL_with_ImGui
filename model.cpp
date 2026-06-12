@@ -8,6 +8,7 @@ void Model::render(Shader& shader) {
 	model = glm::translate(model, pos);
 	model = glm::scale(model, size);
 	shader.setMat4("model", model);
+	shader.setBool("noTex", noTex);
 	for (auto& mesh : meshes) {
 		mesh.render(shader);
 	}

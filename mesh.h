@@ -36,6 +36,7 @@ public:
 	void render(Shader& shader);
 
 	ArrayObject VAO;
+	void cleanup();
 
 private:
 	void setupMesh();
