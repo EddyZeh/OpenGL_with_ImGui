@@ -1,11 +1,12 @@
 #include "mesh.h"
 
-std::vector<Vertex> Vertex::genList(float* vertices, int noVertices) {
-	std::vector<Vertex> ret(noVertices);
-
+std::vector<Vertex> Vertex::genList(const std::vector<float> vertices) {
 	int stride = sizeof(Vertex) / sizeof(float);
 
-	for (int i = 0; i < noVertices; i++) {
+	int noVertices =vertices.size() / stride;
+	std::vector<Vertex> ret(noVertices);
+
+	for (unsigned int i = 0; i < noVertices; i++) {
 		ret[i].Position = glm::vec3(
 			vertices[i * stride + 0],
 			vertices[i * stride + 1],

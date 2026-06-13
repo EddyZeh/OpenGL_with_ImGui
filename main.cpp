@@ -14,22 +14,25 @@
 
 #include "Screen.h"
 
+// graphics
 #include "Shader.h"
 #include "Texture.h"
 #include "Camera.h"
 #include "glMemory.hpp"
 #include "framebuffer.hpp"
+#include "cubemap.h"
 
+// io
 #include "Mouse.h"
 #include "Keyboard.h"
 #include "Joystick.h"
 
+// primitive shape models
 #include "cube.hpp"
 #include "lamp.hpp"
 #include "sphere.hpp"
 
 void processInput(float deltaTime);
-
 
 const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -85,8 +88,9 @@ int main() {
 	// SHADERS
 	Shader shader("object.vert", "shadows.frag");
 	Shader lampShader("object.vert", "lamp.frag");
-	Shader cubemapShader("cubemap.vert", "cubemap.frag", "cubemap.geom");
+	Shader depthMapShader("depthMap.vert", "depthMap.frag", "depthMap.geom");
 	Shader fboShader("FBO.vert", "FBO.frag");
+	Shader skyboxShader("skybox.vert", "skybox.frag");
 
 	// TEXTURES
 	Texture containerTex("assets", "container2.png");
@@ -99,6 +103,11 @@ int main() {
 
 	containerTex.bind();
 	
+
+	// Cubemap
+	Cubemap skybox;
+	skybox.init();
+	skybox.loadTextures("assets/skybox");
 
 	// MODELS
 	
@@ -144,45 +153,23 @@ int main() {
 	Model m(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f));
 	m.loadModel("assets/models/lotr_troll/scene.gltf");
 
-	float woodVertices[] = {
-		// positions            // normals         // texcoords
-		 10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
-		-10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
-		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
-
-		 10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
-		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
-		 10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
-	};
-
 
 	ArrayObject VAO;
 	VAO.generate();
 	VAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
 	VAO.bind();
 	VAO["VBO"].bind();
-	VAO["VBO"].setData<float>(sizeof(woodVertices) / sizeof(woodVertices[0]), woodVertices, GL_STATIC_DRAW);
+	VAO["VBO"].setData<float>(MeshData::Plane.vertices.size(), &MeshData::Plane.vertices[0], GL_STATIC_DRAW);
 	VAO["VBO"].setAttPointer<float>(0, 3, GL_FLOAT, 8, 0);
 	VAO["VB0"].setAttPointer<float>(1, 3, GL_FLOAT, 8, 3);
 	VAO["VB0"].setAttPointer<float>(2, 2, GL_FLOAT, 8, 6);
-
-	float quadVertices[] = {
-		// positions		// texCoords
-		-1.0f,  1.0f,		0.0f, 1.0f,
-		-1.0f, -1.0f,		0.0f, 0.0f,
-		 1.0f, -1.0f,		1.0f, 0.0f,
-
-		-1.0f,  1.0f,		0.0f, 1.0f,
-		 1.0f, -1.0f,		1.0f, 0.0f,
-		 1.0f,  1.0f,		1.0f, 1.0f
-	};
 
 	ArrayObject fboVAO;
 	fboVAO.generate();
 	fboVAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
 	fboVAO.bind();
 	fboVAO["VBO"].bind();
-	fboVAO["VBO"].setData<float>(sizeof(quadVertices) / sizeof(quadVertices[0]), quadVertices, GL_STATIC_DRAW);
+	fboVAO["VBO"].setData<float>(MeshData::Quad.vertices.size(), MeshData::Quad.vertices.data(), GL_STATIC_DRAW);
 	fboVAO["VBO"].setAttPointer<float>(0, 2, GL_FLOAT, 4, 0);
 	fboVAO["VBO"].setAttPointer<float>(1, 2, GL_FLOAT, 4, 2);
 
@@ -232,11 +219,15 @@ int main() {
 		std::cout << "Not present." << std::endl;
 	}
 
+
 	shader.activate();
 	shader.setInt("diffuseTexture", 0);
 
 	fboShader.activate();
 	fboShader.setInt("screenTexture", 0);
+
+	skyboxShader.activate();
+	skyboxShader.setInt("skybox", 0);
 
 	// MAIN LOOP
 	while (!screen.shouldClose()) {
@@ -254,7 +245,8 @@ int main() {
 		// ImGui UI
 		
 
-		// RENDERING
+		// SCENE RENDERING
+
 		glEnable(GL_DEPTH_TEST);
 		screen.update();
 
@@ -289,20 +281,21 @@ int main() {
 			glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemaps[i], 0);
 
 			glClear(GL_DEPTH_BUFFER_BIT);
-			cubemapShader.activate();
+			depthMapShader.activate();
 			for (unsigned int face = 0; face < 6; ++face)
-				cubemapShader.setMat4("shadowMatrices[" + std::to_string(face) + "]", shadowTransforms[face]);
-			cubemapShader.setFloat("far_plane", far_plane);
-			cubemapShader.set3Float("lightPos", lightPos);
-			cubemapShader.setBool("instanced", true);
-			roomCube.render(cubemapShader);
-			cubes.render(cubemapShader);
-			spheres.render(cubemapShader);
-			cubemapShader.setBool("instanced", false);
-			m.render(cubemapShader);
+				depthMapShader.setMat4("shadowMatrices[" + std::to_string(face) + "]", shadowTransforms[face]);
+			depthMapShader.setFloat("far_plane", far_plane);
+			depthMapShader.set3Float("lightPos", lightPos);
+			depthMapShader.setBool("instanced", true);
+			roomCube.render(depthMapShader);
+			cubes.render(depthMapShader);
+			spheres.render(depthMapShader);
+			depthMapShader.setBool("instanced", false);
+			m.render(depthMapShader);
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		FramebufferObject::bindDefault();
 		// END ==================================
+
 		
 		// RESET VIEWPORT
 		fbo.bind();
@@ -310,11 +303,9 @@ int main() {
 		screen.update();
 
 		// 2nd PASS (Rendering normal scene)
-		
 		glm::mat4 view = Camera::defaultCamera.getViewMatrix();
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(glm::radians(Camera::defaultCamera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.f);
-
 
 		shader.activate();
 		shader.setMat4("view", view);
@@ -357,6 +348,8 @@ int main() {
 		lampShader.setBool("instanced", true);
 		lamps.render(lampShader);
 
+		skybox.render(skyboxShader, view, projection);
+
 		ArrayObject::clear();
 
 		FramebufferObject::bindDefault();
@@ -389,6 +382,7 @@ int main() {
 	lamps.cleanup();
 	glDeleteFramebuffers(1, &depthMapFBO);
 	fbo.cleanup();
+	skybox.cleanup();
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

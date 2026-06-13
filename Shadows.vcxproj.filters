@@ -65,6 +65,12 @@
     <ClCompile Include="mesh.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="cubemap.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshData.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -115,6 +121,12 @@
     <ClInclude Include="framebuffer.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="cubemap.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="lamp.frag">
@@ -129,13 +141,13 @@
     <None Include="shadows.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="cubemap.vert">
+    <None Include="depthMap.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="cubemap.geom">
+    <None Include="depthMap.geom">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="cubemap.frag">
+    <None Include="depthMap.frag">
       <Filter>Shaders</Filter>
     </None>
     <None Include=".gitignore">
@@ -154,6 +166,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="blur.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="skybox.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="skybox.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

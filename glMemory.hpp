@@ -87,6 +87,10 @@ public:
 		glDrawElementsInstanced(mode, count, type, (void*)indices, instanceCount);
 	}
 
+	void draw(GLenum mode, GLsizei count) {
+		glDrawArrays(mode, 0, count);
+	}
+
 	void cleanup() {
 		glDeleteVertexArrays(1, &val);
 		for (auto& pair : buffers) {

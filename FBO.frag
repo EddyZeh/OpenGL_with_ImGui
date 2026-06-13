@@ -13,10 +13,10 @@ float offsetY = 1.0 / screenHeight;
 
 void main(){
 
-	//vec3 color = texture(screenTexture, texCoords).rgb;
+	vec3 color = texture(screenTexture, texCoords).rgb;
 
 	// Normal
-	//FragColor = vec4(color, 1.0);
+	FragColor = vec4(color, 1.0);
 
 	// Inversion
 	// FragColor = vec4(1.0 - color, 1.0);
@@ -25,6 +25,7 @@ void main(){
 	//float average = 0.2126 * color.x + 0.7152 * color.y + 0.0722 * color.z;
 	//FragColor = vec4(average, average, average, 1.0);
 	
+	/*
 	vec2 offsets[9] = vec2[](
 		vec2(-offsetX, offsetY),  // top -left
 		vec2(0.0f,     offsetY),  // top
@@ -38,7 +39,7 @@ void main(){
 		vec2(0.0f,     -offsetY), // bottom
 		vec2(offsetX,  -offsetY)  // bottom-right
 	);
-	
+	*/
 	// Sharpening
 	/*float kernel[9] = float[](
 		-1, -1, -1,
@@ -87,7 +88,7 @@ void main(){
 	FragColor = vec4(edge, 1.0);
 	*/
 	// Emboss
-	float kernel[9] = float[](
+	/*float kernel[9] = float[](
 		-2, 1, 0,
 		-1, 1, 1,
  		 0, 1, 2
@@ -106,5 +107,5 @@ void main(){
 	}
 	
 	FragColor = vec4(col, 1.0);
-	
+	*/
 }

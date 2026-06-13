@@ -21,7 +21,7 @@ struct Vertex {
 	glm::vec3 Normal;
 	glm::vec2 TexCoord;
 
-	static std::vector<struct Vertex> genList(float* vertices, int noVertices);
+	static std::vector<struct Vertex> genList(const std::vector<float> vertices);
 };
 
 class Mesh {
