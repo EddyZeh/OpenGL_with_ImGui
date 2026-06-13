@@ -107,7 +107,7 @@ int main() {
 	// Cubemap
 	Cubemap skybox;
 	skybox.init();
-	skybox.loadTextures("assets/skybox");
+	skybox.loadTextures("assets/skybox/nature");
 
 	// MODELS
 	
@@ -307,6 +307,8 @@ int main() {
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(glm::radians(Camera::defaultCamera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.f);
 
+		skybox.render(skyboxShader, view, projection);
+
 		shader.activate();
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
@@ -348,7 +350,6 @@ int main() {
 		lampShader.setBool("instanced", true);
 		lamps.render(lampShader);
 
-		skybox.render(skyboxShader, view, projection);
 
 		ArrayObject::clear();
 
