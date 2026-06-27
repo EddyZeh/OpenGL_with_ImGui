@@ -326,8 +326,6 @@ int main() {
 		m.render(shader);
 
 		lampShader.activate();
-		//lampShader.setMat4("view", view);
-		//lampShader.setMat4("projection", projection);
 		lampShader.setInt("reverse_normals", 0);
 		scene.render(lampShader);
 		lampShader.setBool("instanced", true);

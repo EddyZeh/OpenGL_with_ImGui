@@ -164,8 +164,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="blur.frag" />
-    <None Include="bright.frag" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />
     <None Include="debugDepthQuad.frag" />
