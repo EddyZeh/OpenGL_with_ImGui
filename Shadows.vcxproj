@@ -136,6 +136,7 @@
     <ClCompile Include="MeshData.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="scene.cpp" />
     <ClCompile Include="screen.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="model.h" />
     <ClInclude Include="modelarray.hpp" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="scene.h" />
     <ClInclude Include="screen.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="sphere.hpp" />

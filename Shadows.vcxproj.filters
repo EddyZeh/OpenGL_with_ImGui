@@ -71,6 +71,9 @@
     <ClCompile Include="MeshData.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -126,6 +129,9 @@
     </ClInclude>
     <ClInclude Include="MeshData.h">
       <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

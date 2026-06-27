@@ -31,7 +31,7 @@ public:
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
 
-		int Y_SEGMENTS = 64, X_SEGMENTS = 64;
+		int Y_SEGMENTS = 32, X_SEGMENTS = 32;
 
 		for (unsigned int y = 0; y <= Y_SEGMENTS; y++) {
 			for (unsigned int x = 0; x <= X_SEGMENTS; x++) {

@@ -23,6 +23,7 @@
 #include "cubemap.h"
 
 // io
+#include "scene.h"
 #include "Mouse.h"
 #include "Keyboard.h"
 #include "Joystick.h"
@@ -37,10 +38,11 @@ void processInput(float deltaTime);
 const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Screen screen;
+//Screen screen;
+Scene scene(3, 3, "Graphics Engine", 800, 600);
+Camera cam1(glm::vec3(0.0f));
 
 Camera Camera::defaultCamera(glm::vec3(0.0f, 0.0f, 0.0f));
-Joystick mainJ(0);
 
 static bool quadInit = false;
 
@@ -49,41 +51,35 @@ float lastFrame = 0.0f;
 
 bool blinn = false, shadows = true;
 
-int main() {
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+enum PostProcessEffect {
+	NONE = 0,
+	INVERT,
+	GRAYSCALE,
+	SHARPEN,
+	EDGE,
+	SOBEL,
+	EMBOSS
+};
+PostProcessEffect currentEffect = PostProcessEffect::NONE;
 
-	if (!screen.init()) {
-		std::cout << "Failed to create GLFW window" << std::endl;
+int main() {
+	if (!scene.init()) {
+		std::cout << "Failed to initialize GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
+	// SCENE SET UP SCENE (INIT FRONTEND + CAMERAS + BG COLOR)
+	scene.initFrontEnd();
+
+	if (scene.joystickPresent()) {
+		std::cout << scene.mainJ.getName() << " is present." << std::endl;
 	}
-
-	glEnable(GL_DEPTH_TEST);
-	screen.setParamters();
-
-	// Create IMGUI context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	
-	// Style
-	ImGui::StyleColorsDark();
-
-
-	// Initialize backends
-	ImGui_ImplGlfw_InitForOpenGL(screen.window, true);
-	ImGui_ImplOpenGL3_Init("#version 330");
-
-	// Configure global opengl state
-	glEnable(GL_DEPTH_TEST);
+	else {
+		std::cout << "Not present." << std::endl;
+	}
+	scene.setWindowColor(0.1f, 0.1f, 0.1f, 1.0f);
+	scene.addCam(&cam1);
 
 	// SHADERS
 	Shader shader("object.vert", "shadows.frag");
@@ -175,6 +171,7 @@ int main() {
 
 	ArrayObject::clear();
 
+
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
 	unsigned int depthMapFBO;
@@ -205,19 +202,11 @@ int main() {
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	FramebufferObject fbo(screen.SCR_WIDTH, screen.SCR_HEIGHT, GL_COLOR_BUFFER_BIT);
+	FramebufferObject fbo(Scene::SCR_WIDTH, Scene::SCR_HEIGHT, GL_COLOR_BUFFER_BIT);
 	fbo.generate();
 	fbo.allocateAndAttachTexture(GL_COLOR_ATTACHMENT0, GL_RGB, GL_UNSIGNED_BYTE);
 	fbo.attachRBO(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
 	FramebufferObject::bindDefault();
-
-	mainJ.update();
-	if (mainJ.isPresent()) {
-		std::cout << mainJ.getName() << " is present." << std::endl;
-	}
-	else {
-		std::cout << "Not present." << std::endl;
-	}
 
 
 	shader.activate();
@@ -230,7 +219,7 @@ int main() {
 	skyboxShader.setInt("skybox", 0);
 
 	// MAIN LOOP
-	while (!screen.shouldClose()) {
+	while (!scene.shouldClose()) {
 		// INPUT
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
@@ -238,18 +227,14 @@ int main() {
 		processInput(deltaTime);
 
 		// Start ImGui Frame
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
+		scene.frontendNewFrame();
 
 		// ImGui UI
 		
 
 		// SCENE RENDERING
-
 		glEnable(GL_DEPTH_TEST);
-		screen.update();
-
+		scene.update();
 		// 1st PASS (Rendering DepthMap) ======================
 			
 		float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
@@ -300,20 +285,17 @@ int main() {
 		// RESET VIEWPORT
 		fbo.bind();
 		fbo.setViewport();
-		screen.update();
+		scene.update();
 
 		// 2nd PASS (Rendering normal scene)
-		glm::mat4 view = Camera::defaultCamera.getViewMatrix();
+		glm::mat4 view = scene.getActiveCamera()->getViewMatrix();
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(Camera::defaultCamera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.f);
+		projection = glm::perspective(glm::radians(scene.getActiveCamera()->getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.f);
 
 		skybox.render(skyboxShader, view, projection);
 
 		shader.activate();
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-
-		shader.set3Float("viewPos", Camera::defaultCamera.cameraPos);
+		scene.render(shader);
 		shader.setInt("shadows", shadows);
 		shader.setFloat("far_plane", far_plane);
 		shader.setInt("noPointLights", static_cast<int>(lamps.pointLightPos.size()));
@@ -344,9 +326,10 @@ int main() {
 		m.render(shader);
 
 		lampShader.activate();
-		lampShader.setMat4("view", view);
-		lampShader.setMat4("projection", projection);
+		//lampShader.setMat4("view", view);
+		//lampShader.setMat4("projection", projection);
 		lampShader.setInt("reverse_normals", 0);
+		scene.render(lampShader);
 		lampShader.setBool("instanced", true);
 		lamps.render(lampShader);
 
@@ -364,18 +347,20 @@ int main() {
 			fbo.textures[i].bind();
 		}
 		fboShader.setInt("screenTexture", 0);
-		float screenWidth = static_cast<float>(screen.SCR_WIDTH);
-		float screenHeight = static_cast<float>(screen.SCR_HEIGHT);
+		float screenWidth = static_cast<float>(Scene::SCR_WIDTH);
+		float screenHeight = static_cast<float>(Scene::SCR_HEIGHT);
 		fboShader.setFloat("screenWidth", screenWidth);
 		fboShader.setFloat("screenHeight", screenHeight);
+		fboShader.setInt("effect", currentEffect);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		// Render ImGui
+		scene.renderIMGUI();
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		// CHECK AND CALL EVENTS AND SWAP THE BUFFERS
-		screen.newFrame();
+		scene.backendNewFrame();
 	}
 	cubes.cleanup();
 	spheres.cleanup();
@@ -385,40 +370,15 @@ int main() {
 	fbo.cleanup();
 	skybox.cleanup();
 
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-	glfwTerminate();
+	scene.cleanup();
 	return 0;
 }
 
 void processInput(float deltaTime){
 	// KEYBOARD =============================
+	scene.processInput(deltaTime);
 	if (Keyboard::key(GLFW_KEY_ESCAPE)) {
-		screen.setShouldClose(true);
-	}
-	if (Keyboard::key(GLFW_KEY_W)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::FORWARD, deltaTime);
-	}
-
-	if (Keyboard::key(GLFW_KEY_S)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::BACKWARD, deltaTime);
-	}
-
-	if (Keyboard::key(GLFW_KEY_D)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::RIGHT, deltaTime);
-	}
-
-	if (Keyboard::key(GLFW_KEY_A)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::LEFT, deltaTime);
-	}
-
-	if (Keyboard::key(GLFW_KEY_SPACE)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::UP, deltaTime);
-	}
-
-	if (Keyboard::key(GLFW_KEY_LEFT_SHIFT)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::DOWN, deltaTime);
+		scene.setShouldClose(true);
 	}
 
 	if (Keyboard::keyWentDown(GLFW_KEY_B)) {
@@ -428,61 +388,31 @@ void processInput(float deltaTime){
 		shadows = !shadows;
 	}
 
-
-	// MOUSE =============================
-	double dx = Mouse::getDX(), dy = Mouse::getDY();
-	if (dx != 0 || dy != 0) {
-		Camera::defaultCamera.updateCameraDirection(dx, dy);
+	if (Keyboard::keyWentDown(GLFW_KEY_0)) {
+		currentEffect = PostProcessEffect::NONE;
+	}
+	if (Keyboard::keyWentDown(GLFW_KEY_1)) {
+		currentEffect = PostProcessEffect::INVERT;
 	}
 
-	double scrollDY = Mouse::getScrollDY();
-	if (scrollDY != 0) {
-		Camera::defaultCamera.updateCameraZoom(scrollDY);
+	if (Keyboard::keyWentDown(GLFW_KEY_2)) {
+		currentEffect = PostProcessEffect::GRAYSCALE;
 	}
 
-	mainJ.update();
-
-	// JOYSTIC =============================
-	float lx = mainJ.axesState(GLFW_GAMEPAD_AXIS_LEFT_X);
-	float ly = -mainJ.axesState(GLFW_GAMEPAD_AXIS_LEFT_Y);
-
-
-	float sensitivity = 50.0f;
-	float ry = -mainJ.axesState(GLFW_GAMEPAD_AXIS_RIGHT_Y);
-	float rx = mainJ.axesState(GLFW_GAMEPAD_AXIS_RIGHT_X);
-
-	if (lx > 0.5f) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::RIGHT, deltaTime);
+	if (Keyboard::keyWentDown(GLFW_KEY_3)) {
+		currentEffect = PostProcessEffect::SHARPEN;
 	}
 
-	if (lx < -0.5f) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::LEFT, deltaTime);
+	if (Keyboard::keyWentDown(GLFW_KEY_4)) {
+		currentEffect = PostProcessEffect::EDGE;
 	}
 
-	if (ly > 0.5f) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::FORWARD, deltaTime);
+	if (Keyboard::keyWentDown(GLFW_KEY_5)) {
+		currentEffect = PostProcessEffect::SOBEL;
 	}
 
-	if (ly < -0.05f) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::BACKWARD, deltaTime);
+	if (Keyboard::keyWentDown(GLFW_KEY_6)) {
+		currentEffect = PostProcessEffect::EMBOSS;
 	}
 
-	if (mainJ.buttonState(GLFW_GAMEPAD_BUTTON_A)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::UP, deltaTime);
-	}
-
-	if (mainJ.buttonState(GLFW_GAMEPAD_BUTTON_X)) {
-		Camera::defaultCamera.updateCameraPos(CameraDirection::DOWN, deltaTime);
-	}
-
-	/*if (std::abs(ry) > 0.5f) {
-		z += (ry * speed * deltaTime);
-	}*/
-
-
-	if (std::abs(rx) > 0.1f || std::abs(ry) > 0.1f) {
-		double dx = rx * sensitivity * deltaTime;
-		double dy = ry * sensitivity * deltaTime;
-		Camera::defaultCamera.updateCameraDirection(dx, dy);
-	}
 }
