@@ -18,10 +18,18 @@ struct Material{
 };
 uniform Material material;
 
+struct DirLight{
+    vec3 direction;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
 #define MAX_POINT_LIGHTS 16
 struct PointLight{
     vec3 position;
-
+        
     float constant;
     float linear;
     float quadratic;
@@ -32,6 +40,25 @@ struct PointLight{
 };
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform int noPointLights;
+
+#define MAX_SPOT_LIGHTS 5
+struct SpotLight{
+    vec3 position;
+    vec3 direction;
+
+    float cutOff;
+    float outerCutOff;
+
+    float constant;
+    float linear;
+    float quadratic;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
+uniform int noSpotLights;
 
 uniform samplerCube depthMaps[MAX_POINT_LIGHTS];
 

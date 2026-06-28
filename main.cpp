@@ -22,6 +22,8 @@
 #include "framebuffer.hpp"
 #include "cubemap.h"
 
+#include "ResourceManager.h"
+
 // io
 #include "scene.h"
 #include "Mouse.h"
@@ -69,7 +71,7 @@ int main() {
 		return -1;
 	}
 
-	// SCENE SET UP SCENE (INIT FRONTEND + CAMERAS + BG COLOR)
+	// SCENE SET UP (INIT FRONTEND + CAMERAS + BG COLOR)
 	scene.initFrontEnd();
 
 	if (scene.joystickPresent()) {
@@ -82,11 +84,11 @@ int main() {
 	scene.addCam(&cam1);
 
 	// SHADERS
-	Shader shader("object.vert", "shadows.frag");
-	Shader lampShader("object.vert", "lamp.frag");
-	Shader depthMapShader("depthMap.vert", "depthMap.frag", "depthMap.geom");
-	Shader fboShader("FBO.vert", "FBO.frag");
-	Shader skyboxShader("skybox.vert", "skybox.frag");
+	Shader shader         (ResourceManager::createShader("object"));
+	Shader lampShader     (ResourceManager::createShader("object", std::string("lamp")));
+	Shader depthMapShader (ResourceManager::createShader("depthMap", true));
+	Shader fboShader      (ResourceManager::createShader("FBO"));
+	Shader skyboxShader   (ResourceManager::createShader("skybox"));
 
 	// TEXTURES
 	Texture containerTex("assets", "container2.png");
@@ -103,7 +105,7 @@ int main() {
 	// Cubemap
 	Cubemap skybox;
 	skybox.init();
-	skybox.loadTextures("assets/skybox/nature");
+	skybox.loadTextures("assets/cubemaps/nature");
 
 	// MODELS
 	
@@ -354,9 +356,6 @@ int main() {
 
 		// Render ImGui
 		scene.renderIMGUI();
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 		// CHECK AND CALL EVENTS AND SWAP THE BUFFERS
 		scene.backendNewFrame();
 	}
@@ -375,9 +374,6 @@ int main() {
 void processInput(float deltaTime){
 	// KEYBOARD =============================
 	scene.processInput(deltaTime);
-	if (Keyboard::key(GLFW_KEY_ESCAPE)) {
-		scene.setShouldClose(true);
-	}
 
 	if (Keyboard::keyWentDown(GLFW_KEY_B)) {
 		blinn = !blinn;

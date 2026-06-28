@@ -99,7 +99,7 @@ void Scene::processInput(float dt){
 
 		// KEYBOARD =============================
 		if (Keyboard::key(GLFW_KEY_ESCAPE)) {
-			shouldClose();
+			setShouldClose(true);
 		}
 		if (Keyboard::key(GLFW_KEY_W)) {
 			cameras[activeCam]->updateCameraPos(CameraDirection::FORWARD, dt);

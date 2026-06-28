@@ -74,6 +74,15 @@
     <ClCompile Include="scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -133,45 +142,57 @@
     <ClInclude Include="scene.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="light.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="path.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="lamp.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="debugDepthQuad.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="debugDepthQuad.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shadows.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="depthMap.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="depthMap.geom">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="depthMap.frag">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include=".gitignore">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="object.vert">
+    <None Include="shaders\debugDepthQuad.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="FBO.vert">
+    <None Include="shaders\debugDepthQuad.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="FBO.frag">
+    <None Include="shaders\depthMap.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="skybox.vert">
+    <None Include="shaders\depthMap.geom">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="skybox.frag">
+    <None Include="shaders\depthMap.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\FBO.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\FBO.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\lamp.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\object.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\object.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\skybox.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\skybox.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

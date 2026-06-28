@@ -36,7 +36,7 @@ public:
 
 		model->render(shader);
 
-		int instanceCount = std::min(UPPER_BOUND, (int)positions.size()); // if more than 100 render only 100
+		int instanceCount = min(UPPER_BOUND, (int)positions.size()); // if more than 100 render only 100
 		if (instanceCount > 0) {
 			// if instance exist
 			// reset VBOs
