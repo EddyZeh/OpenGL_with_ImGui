@@ -3,8 +3,8 @@
 #ifndef RESOURCE_MANAGER_H
 #define RESOURCE_MANAGER_H
 
-#include "Shader.h"
-#include "Texture.h"
+#include "../graphics/Shader.h"
+#include "../graphics/Texture.h"
 #include "path.h"
 
 class ResourceManager {

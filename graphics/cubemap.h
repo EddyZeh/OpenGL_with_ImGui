@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "Shader.h"
-#include "glMemory.hpp"
+#include "../memory/glMemory.hpp"
 #include "MeshData.h"
 
 class Cubemap {

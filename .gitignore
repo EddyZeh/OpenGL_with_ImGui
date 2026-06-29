@@ -1,6 +1,12 @@
 # ignore build folder
-Shadows/
+Graphics Engine/
+
+.vs/
 
 x64/
 
 visual debugs/
+
+*.user
+*.filter
+*vcxproj

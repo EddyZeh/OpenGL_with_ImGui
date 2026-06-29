@@ -5,9 +5,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
-#include "Shader.h"
-#include "Texture.h"
-#include "material.h"
+#include "../Shader.h"
+#include "../Texture.h"
+#include "../material.h"
 
 #include "modelarray.hpp"
 
@@ -31,7 +31,7 @@ public:
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
 
-		int Y_SEGMENTS = 32, X_SEGMENTS = 32;
+		unsigned int Y_SEGMENTS = 32, X_SEGMENTS = 32;
 
 		for (unsigned int y = 0; y <= Y_SEGMENTS; y++) {
 			for (unsigned int x = 0; x <= X_SEGMENTS; x++) {

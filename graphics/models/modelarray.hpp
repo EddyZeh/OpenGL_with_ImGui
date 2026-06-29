@@ -1,7 +1,7 @@
 #ifndef MODELARRAY_HPP
 #define MODELARRAY_HPP
 
-#include "model.h"
+#include "../model.h"
 
 #define UPPER_BOUND 100
 
@@ -53,7 +53,7 @@ public:
 		// render instanced data
 		for (unsigned int i = 0; i < model->meshes.size(); i++) {
 			model->meshes[i].VAO.bind();
-			model->meshes[i].VAO.draw(GL_TRIANGLES, model->meshes[i].indices.size(), GL_UNSIGNED_INT, 0, instanceCount);
+			model->meshes[i].VAO.draw(GL_TRIANGLES, (GLuint)model->meshes[i].indices.size(), GL_UNSIGNED_INT, 0, instanceCount);
 		}
 	}
 

@@ -6,18 +6,20 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <imgui.h>
+
 #include <vector>
 
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include "Shader.h"
+#include "graphics/Shader.h"
+#include "graphics/Camera.h"
 
-#include "Keyboard.h"
-#include "Mouse.h"
-#include "Joystick.h"
+#include "io/Keyboard.h"
+#include "io/Mouse.h"
+#include "io/Joystick.h"
 
-#include "Camera.h"
 
 class Scene {
 public:

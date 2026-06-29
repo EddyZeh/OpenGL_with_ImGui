@@ -14,7 +14,7 @@
 #include "Shader.h"
 #include "Texture.h"
 
-#include "glMemory.hpp"
+#include "../memory/glMemory.hpp"
 
 struct Vertex {
 	glm::vec3 Position;

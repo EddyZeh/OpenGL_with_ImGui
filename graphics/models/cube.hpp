@@ -5,12 +5,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 
-#include "Shader.h"
-#include "Texture.h"
-#include "material.h"
+#include "../Shader.h"
+#include "../Texture.h"
+#include "../material.h"
 
 #include "modelarray.hpp"
-#include "MeshData.h"
+#include "../MeshData.h"
 
 struct CubeInstance {
     glm::vec3 positions;

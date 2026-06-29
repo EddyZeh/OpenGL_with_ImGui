@@ -7,7 +7,7 @@
 #include <assimp/postprocess.h>
 
 #include "mesh.h"
-#include "ResourceManager.h"
+#include "../memory/ResourceManager.h"
 
 class Model {
 public:

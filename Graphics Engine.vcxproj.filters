@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include=".gitattributes">
+      <Filter>src</Filter>
+    </None>
+    <None Include="shaders\debugDepthQuad.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\debugDepthQuad.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\depthMap.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\depthMap.geom">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\depthMap.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\FBO.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\FBO.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\lamp.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\object.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\object.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\skybox.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\skybox.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include=".gitignore">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{140b14cb-e251-451a-bc09-80f99b9e0a2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{fe38951b-ca3a-4583-918f-05c8396b469c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{73fd64e7-8ddf-43dd-a819-c8aa1d65ecdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="graphics\models">
+      <UniqueIdentifier>{78707e17-2f22-45a6-91aa-1a1155feb953}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="memory">
+      <UniqueIdentifier>{746f12b5-7750-443e-a1af-077cf158d44d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="backends">
+      <UniqueIdentifier>{c11f0947-7a75-4bc7-8596-e7534fc936f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{4ecf176b-bfbb-4fe8-a035-3d0e310863cf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\Camera.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\cubemap.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\material.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\mesh.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\MeshData.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\model.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\screen.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\Shader.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics\Texture.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="memory\FileSystem.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory\path.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="memory\ResourceManager.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="scene.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="io\Joystick.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="io\Keyboard.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="io\Mouse.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="backends\imgui_impl_glfw.cpp">
+      <Filter>backends</Filter>
+    </ClCompile>
+    <ClCompile Include="backends\imgui_impl_opengl3.cpp">
+      <Filter>backends</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="graphics\Camera.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\cubemap.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\framebuffer.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\light.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\material.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\mesh.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\MeshData.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\model.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\screen.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\Shader.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\Texture.h">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\models\cube.hpp">
+      <Filter>graphics\models</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\models\lamp.hpp">
+      <Filter>graphics\models</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\models\modelarray.hpp">
+      <Filter>graphics\models</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics\models\sphere.hpp">
+      <Filter>graphics\models</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\FileSystem.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\glMemory.hpp">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\path.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="memory\ResourceManager.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="backends\imgui_impl_glfw.h">
+      <Filter>backends</Filter>
+    </ClInclude>
+    <ClInclude Include="backends\imgui_impl_opengl3.h">
+      <Filter>backends</Filter>
+    </ClInclude>
+    <ClInclude Include="scene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="io\Joystick.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="io\Keyboard.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="io\Mouse.h">
+      <Filter>io</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

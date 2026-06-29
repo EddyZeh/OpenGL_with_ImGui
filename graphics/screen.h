@@ -6,9 +6,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "Mouse.h"
-#include "Keyboard.h"
-#include "Joystick.h"
+#include "../io/Mouse.h"
+#include "../io/Keyboard.h"
+#include "../io/Joystick.h"
 
 class Screen {
 public:

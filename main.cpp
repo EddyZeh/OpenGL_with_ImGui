@@ -1,39 +1,36 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <imgui.h>
-
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
 
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
-
-#include "Screen.h"
 
 // graphics
-#include "Shader.h"
-#include "Texture.h"
-#include "Camera.h"
-#include "glMemory.hpp"
-#include "framebuffer.hpp"
-#include "cubemap.h"
+#include "scene.h"
+#include "graphics/Screen.h"
+#include "graphics/Shader.h"
+#include "graphics/Texture.h"
+#include "graphics/Camera.h"
+#include "graphics/framebuffer.hpp"
+#include "graphics/cubemap.h"
 
-#include "ResourceManager.h"
+
+// Memory
+#include "memory/ResourceManager.h"
+#include "memory/glMemory.hpp"
 
 // io
-#include "scene.h"
-#include "Mouse.h"
-#include "Keyboard.h"
-#include "Joystick.h"
+#include "io/Mouse.h"
+#include "io/Keyboard.h"
+#include "io/Joystick.h"
 
 // primitive shape models
-#include "cube.hpp"
-#include "lamp.hpp"
-#include "sphere.hpp"
+#include "graphics/models/cube.hpp"
+#include "graphics/models/lamp.hpp"
+#include "graphics/models/sphere.hpp"
 
 void processInput(float deltaTime);
 
@@ -157,7 +154,7 @@ int main() {
 	VAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
 	VAO.bind();
 	VAO["VBO"].bind();
-	VAO["VBO"].setData<float>(MeshData::Plane.vertices.size(), &MeshData::Plane.vertices[0], GL_STATIC_DRAW);
+	VAO["VBO"].setData<float>((GLuint)MeshData::Plane.vertices.size(), &MeshData::Plane.vertices[0], GL_STATIC_DRAW);
 	VAO["VBO"].setAttPointer<float>(0, 3, GL_FLOAT, 8, 0);
 	VAO["VB0"].setAttPointer<float>(1, 3, GL_FLOAT, 8, 3);
 	VAO["VB0"].setAttPointer<float>(2, 2, GL_FLOAT, 8, 6);
@@ -167,7 +164,7 @@ int main() {
 	fboVAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
 	fboVAO.bind();
 	fboVAO["VBO"].bind();
-	fboVAO["VBO"].setData<float>(MeshData::Quad.vertices.size(), MeshData::Quad.vertices.data(), GL_STATIC_DRAW);
+	fboVAO["VBO"].setData<float>((GLuint)MeshData::Quad.vertices.size(), MeshData::Quad.vertices.data(), GL_STATIC_DRAW);
 	fboVAO["VBO"].setAttPointer<float>(0, 2, GL_FLOAT, 4, 0);
 	fboVAO["VBO"].setAttPointer<float>(1, 2, GL_FLOAT, 4, 2);
 
