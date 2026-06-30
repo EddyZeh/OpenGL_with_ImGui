@@ -1,7 +1,7 @@
 #include "FileSystem.h"
 
 
-std::filesystem::path FileSytem::GetExecutableDirectory(){
+std::filesystem::path FileSystem::GetExecutableDirectory(){
 	char buffer[MAX_PATH];
 
 	GetModuleFileNameA(nullptr, buffer, MAX_PATH);

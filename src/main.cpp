@@ -9,7 +9,7 @@
 
 
 // graphics
-#include "scene.h"
+#include "graphics/scene.h"
 #include "graphics/Screen.h"
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
@@ -19,6 +19,7 @@
 
 
 // Memory
+#include "memory/FileSystem.h"
 #include "memory/ResourceManager.h"
 #include "memory/glMemory.hpp"
 
@@ -62,6 +63,8 @@ enum PostProcessEffect {
 PostProcessEffect currentEffect = PostProcessEffect::NONE;
 
 int main() {
+	Paths::init();
+
 	if (!scene.init()) {
 		std::cout << "Failed to initialize GLFW window" << std::endl;
 		glfwTerminate();
@@ -77,6 +80,7 @@ int main() {
 	else {
 		std::cout << "Not present." << std::endl;
 	}
+
 	scene.setWindowColor(0.1f, 0.1f, 0.1f, 1.0f);
 	scene.addCam(&cam1);
 
@@ -88,9 +92,9 @@ int main() {
 	Shader skyboxShader   (ResourceManager::createShader("skybox"));
 
 	// TEXTURES
-	Texture containerTex("assets", "container2.png");
-	Texture containerSpec("assets", "container2_specular.png");
-	Texture woodTex("assets", "wood.png");
+	Texture containerTex	(ResourceManager::getTexturePath("container2.png"));
+	Texture containerSpec	(ResourceManager::getTexturePath("container2_specular.png"));
+	Texture woodTex			(ResourceManager::getTexturePath("wood.png"));
 	containerTex.load();
 	containerSpec.load();
 	woodTex.load();
@@ -102,7 +106,7 @@ int main() {
 	// Cubemap
 	Cubemap skybox;
 	skybox.init();
-	skybox.loadTextures("assets/cubemaps/nature");
+	skybox.loadTextures(ResourceManager::getCubemapPath("nature"));
 
 	// MODELS
 	
@@ -146,7 +150,7 @@ int main() {
 	}
 
 	Model m(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f));
-	m.loadModel("assets/models/lotr_troll/scene.gltf");
+	m.loadModel(ResourceManager::getModelPath("lotr_troll/scene.gltf"));
 
 
 	ArrayObject VAO;

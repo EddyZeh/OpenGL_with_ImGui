@@ -10,15 +10,15 @@
 
 #include <vector>
 
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
+#include "../backends/imgui_impl_glfw.h"
+#include "../backends/imgui_impl_opengl3.h"
 
-#include "graphics/Shader.h"
-#include "graphics/Camera.h"
+#include "../graphics/Shader.h"
+#include "../graphics/Camera.h"
 
-#include "io/Keyboard.h"
-#include "io/Mouse.h"
-#include "io/Joystick.h"
+#include "../io/Keyboard.h"
+#include "../io/Mouse.h"
+#include "../io/Joystick.h"
 
 
 class Scene {

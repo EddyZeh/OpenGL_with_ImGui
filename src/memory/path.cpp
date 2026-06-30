@@ -1,7 +1,10 @@
 #include "path.h"
 
 void Paths::init() {
-	executableDirectory = FileSytem::GetExecutableDirectory();
+	executableDirectory = FileSystem::GetExecutableDirectory();
+
+	if (executableDirectory.empty())
+		throw std::runtime_error("Failed to determine executable directory.");
 }
 
 std::filesystem::path Paths::Assets(){

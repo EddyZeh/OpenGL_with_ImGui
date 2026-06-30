@@ -98,6 +98,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 		aiString str;
 		mat->GetTexture(type, i, &str);
 		std::cout << str.C_Str() << std::endl;
+		std::string texDir = directory + "/" + str.C_Str();
 
 		// to prevent duplicate loading
 		bool skip = false;
@@ -111,7 +112,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 
 		if (!skip) {
 			// not loaded yet
-			Texture tex(directory, str.C_Str(), type);
+			Texture tex(texDir, type);
 			tex.load(false);
 			textures.push_back(tex);
 			textures_loaded.push_back(tex);

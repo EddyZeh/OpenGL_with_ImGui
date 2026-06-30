@@ -13,7 +13,7 @@
 class Texture {
 public:
 	Texture();
-	Texture(std::string dir, std::string path, aiTextureType type = aiTextureType_NONE, bool gammaCorrection = false);
+	Texture(std::string path, aiTextureType type = aiTextureType_NONE, bool gammaCorrection = false);
 
 	void generate();
 	void load(bool flip = true);
@@ -26,7 +26,7 @@ public:
 						  GLenum wrapT = GL_REPEAT);
 
 	unsigned int id;
-	std::string dir;
+	//std::string dir;
 	std::string path;
 	aiTextureType type;
 

@@ -31,8 +31,14 @@ std::string ResourceManager::getTexturePath(const std::string& name){
 	return (Paths::Textures() / name).string();
 }
 
+std::string ResourceManager::getCubemapPath(const std::string& name){
+	return (Paths::Cubemaps() / name).string();
+}
+
 std::string ResourceManager::getModelPath(const std::string& name){
 	return (Paths::Models() / name).string();
 }
+
+
 
 

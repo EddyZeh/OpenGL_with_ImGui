@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <filesystem>
 
-namespace FileSytem {
+namespace FileSystem {
 	std::filesystem::path GetExecutableDirectory();
 };
 

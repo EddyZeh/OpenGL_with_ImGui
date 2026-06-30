@@ -6,8 +6,8 @@
 
 Texture::Texture() { }
 
-Texture::Texture(std::string dir, std::string path, aiTextureType type, bool gammaCorrection) 
-				: dir(dir), path(path), type(type), gammaCorrection(gammaCorrection){
+Texture::Texture( std::string path, aiTextureType type, bool gammaCorrection) 
+				: path(path), type(type), gammaCorrection(gammaCorrection){
 	generate();
 }
 
@@ -19,7 +19,7 @@ void Texture::load(bool flip){
 	stbi_set_flip_vertically_on_load(flip);
 
 	int width, height, nChannels;
-	unsigned char* data = stbi_load((dir + "/" + path).c_str(), &width, &height, &nChannels, 0);
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nChannels, 0);
 
 	GLenum internalFormat;
 	GLenum colorMode = GL_RGB;

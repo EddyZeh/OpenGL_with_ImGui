@@ -15,6 +15,8 @@ public:
 
 	static std::string getTexturePath(const std::string& name);
 
+	static std::string getCubemapPath(const std::string& name);
+
 	static std::string getModelPath(const std::string& name);
 };
 
