@@ -150,7 +150,7 @@ int main() {
 	}
 
 	Model m(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f));
-	m.loadModel(ResourceManager::getModelPath("lotr_troll/scene.gltf"));
+	m.loadModel(ResourceManager::getModelPath("m4a1/scene.gltf"));
 
 
 	ArrayObject VAO;

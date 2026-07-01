@@ -80,16 +80,31 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
 		}
 	}
 
+	
 	// TEXTURES
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE);
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR);
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		if (noTex) {
+			aiColor4D diff(1.0);
+			aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diff);
+
+			aiColor4D spec(1.0);
+			aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &spec); \
+
+			return Mesh(vertices, indices, diff, spec);
+		}
+		else {
+			std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE);
+			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+
+			std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR);
+			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		}
+		
 	}
 	return Mesh(vertices, indices, textures);
+	
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type){

@@ -28,11 +28,19 @@ std::vector<Vertex> Vertex::genList(const std::vector<float> vertices) {
 }
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
-		: vertices(vertices), indices(indices), textures(textures){
+		: vertices(vertices), indices(indices), textures(textures), noTex(false){
 	setupMesh();
 }
 
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, aiColor4D diff, aiColor4D spec)
+		: vertices(vertices), indices(indices), diff(diff), spec(spec), noTex(true){}
+
 void Mesh::render(Shader& shader) {
+	if (noTex) {
+		shader.set3Float("material.diffuseColor", diff.r, diff.g, diff.b);
+		shader.set3Float("material.specularColor", spec.r, spec.g, spec.b);
+		shader.setBool("noTex", noTex);
+	}
 	unsigned int diffuseN = 0;
 	unsigned int specularN = 0;
 
