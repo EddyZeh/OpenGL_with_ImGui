@@ -72,6 +72,9 @@ uniform bool noTex;
 float ShadowCalculation(int i, vec3 fragPos);
 vec3 PointLightCalc(int i, vec3 norm);
 
+vec3 diffuseColor;
+vec3 specularColor;
+
 void main(){  
     vec3 norm = normalize(fs_in.Normal);
    vec3 result = vec3(0.0);
@@ -107,9 +110,6 @@ float ShadowCalculation(int i, vec3 fragPos){
 
 vec3 PointLightCalc(int i, vec3 norm){
 
-    vec3 diffuseColor;
-    vec3 specularColor;
-
     if(noTex){
         diffuseColor = material.diffuseColor;
         specularColor = material.specularColor;
@@ -135,7 +135,7 @@ vec3 PointLightCalc(int i, vec3 norm){
     float attenuation = 1.0 / ((pointLights[i].constant) + (pointLights[i].linear * dist) + (pointLights[i].quadratic * (dist * dist)));
 
     ambient *= attenuation;
-    diffuse *= attenuation;
+    diffuse *= attenuation; 
     specular *= attenuation;
 
     float shadow = shadows? ShadowCalculation(i, fs_in.FragPos) : 0.0;

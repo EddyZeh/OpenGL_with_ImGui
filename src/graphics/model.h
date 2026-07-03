@@ -21,6 +21,8 @@ public:
 	std::vector<Texture> textures_loaded;
 	void loadModel(std::string path);
 
+	void cleanup();
+
 private:
 	std::string directory;
 	

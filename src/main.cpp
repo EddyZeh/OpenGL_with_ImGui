@@ -149,8 +149,10 @@ int main() {
 		spheres.sphereInstances.push_back({spheresPos[i], spheresSizes[i]});
 	}
 
-	Model m(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f));
+	Model m(glm::vec3(2.0f, 1.5f, -1.0f), glm::vec3(0.01f), true);
 	m.loadModel(ResourceManager::getModelPath("m4a1/scene.gltf"));
+	Model m1(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f));
+	m1.loadModel(ResourceManager::getModelPath("lotr_troll/scene.gltf"));
 
 
 	ArrayObject VAO;
@@ -280,6 +282,7 @@ int main() {
 			spheres.render(depthMapShader);
 			depthMapShader.setBool("instanced", false);
 			m.render(depthMapShader);
+			m1.render(depthMapShader);
 		}
 		FramebufferObject::bindDefault();
 		// END ==================================
@@ -327,6 +330,7 @@ int main() {
 		spheres.render(shader);
 		shader.setBool("instanced", false);
 		m.render(shader);
+		m1.render(shader);
 
 		lampShader.activate();
 		lampShader.setInt("reverse_normals", 0);
@@ -364,6 +368,8 @@ int main() {
 	spheres.cleanup();
 	roomCube.cleanup();
 	lamps.cleanup();
+	m.cleanup();
+	m1.cleanup();
 	glDeleteFramebuffers(1, &depthMapFBO);
 	fbo.cleanup();
 	skybox.cleanup();

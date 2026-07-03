@@ -33,7 +33,9 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 }
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, aiColor4D diff, aiColor4D spec)
-		: vertices(vertices), indices(indices), diff(diff), spec(spec), noTex(true){}
+		: vertices(vertices), indices(indices), diff(diff), spec(spec), noTex(true){
+	setupMesh();
+}
 
 void Mesh::render(Shader& shader) {
 	if (noTex) {
@@ -41,33 +43,35 @@ void Mesh::render(Shader& shader) {
 		shader.set3Float("material.specularColor", spec.r, spec.g, spec.b);
 		shader.setBool("noTex", noTex);
 	}
-	unsigned int diffuseN = 0;
-	unsigned int specularN = 0;
+	else {
+		shader.setBool("noTex", noTex);
+		unsigned int diffuseN = 0;
+		unsigned int specularN = 0;
 
-	for (unsigned int i = 0; i < textures.size(); i++) {
-		glActiveTexture(GL_TEXTURE0 + i);
+		for (unsigned int i = 0; i < textures.size(); i++) {
+			glActiveTexture(GL_TEXTURE0 + i);
 
-		std::string name;
-		switch (textures[i].type) {
-		case aiTextureType_DIFFUSE:
-			name = "diffuseColor";
-			break;
-		case aiTextureType_SPECULAR:
-			name = "specularColor";
-			break;
+			std::string name;
+			switch (textures[i].type) {
+			case aiTextureType_DIFFUSE:
+				name = "diffuseColor";
+				break;
+			case aiTextureType_SPECULAR:
+				name = "specularColor";
+				break;
 
-		default:
-			continue;
+			default:
+				continue;
+			}
+
+			shader.setInt("material." + name, i);
+			textures[i].bind();
 		}
-
-		shader.setInt("material." + name, i);
-		textures[i].bind();
 	}
-
-	glActiveTexture(GL_TEXTURE0);
-
 	VAO.bind();
 	VAO.draw(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+	ArrayObject::clear();
+	glActiveTexture(GL_TEXTURE0);
 }
 
 void Mesh::cleanup() {

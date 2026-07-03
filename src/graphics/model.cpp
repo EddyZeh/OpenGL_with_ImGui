@@ -4,11 +4,11 @@ Model::Model(glm::vec3 pos, glm::vec3 size, bool noTex)
 			: pos(pos), size(size), noTex(noTex){ }
 
 void Model::render(Shader& shader) {
+	shader.activate();
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, pos);
 	model = glm::scale(model, size);
 	shader.setMat4("model", model);
-	shader.setBool("noTex", noTex);
 	for (auto& mesh : meshes) {
 		mesh.render(shader);
 	}
@@ -25,6 +25,12 @@ void Model::loadModel(std::string path){
 	directory = path.substr(0, path.find_last_of('/'));
 
 	processNode(scene->mRootNode, scene);
+}
+
+void Model::cleanup() {
+	for (auto& mesh : meshes) {
+		mesh.cleanup();
+	}
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene){
@@ -90,7 +96,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene){
 			aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diff);
 
 			aiColor4D spec(1.0);
-			aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &spec); \
+			aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &spec);
 
 			return Mesh(vertices, indices, diff, spec);
 		}
