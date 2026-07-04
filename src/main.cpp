@@ -309,16 +309,16 @@ int main() {
 			shader.set3Float("pointLights[" + std::to_string(i) + "].position", lamps.pointLightPos[i]);
 			shader.set3Float("pointLights[" + std::to_string(i) + "].ambient", Material::white_plastic.ambient);
 			shader.set3Float("pointLights[" + std::to_string(i) + "].diffuse", Material::white_plastic.diffuse);
-			shader.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
-			shader.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.09f);
-			shader.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.032f);
+			shader.setFloat("pointLights[" + std::to_string(i) + "].k0", 1.0f);
+			shader.setFloat("pointLights[" + std::to_string(i) + "].k1", 0.09f);
+			shader.setFloat("pointLights[" + std::to_string(i) + "].k2", 0.032f);
 		}
 
 		glActiveTexture(GL_TEXTURE0);
 		woodTex.bind();
 		for (int i = 0; i < lamps.pointLightPos.size(); i++) {
 			glActiveTexture(GL_TEXTURE2 + i);
-			shader.setInt("depthMaps[" + std::to_string(i) + "]", i + 2);
+			shader.setInt("pointDepthMaps[" + std::to_string(i) + "]", i + 2);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemaps[i]);
 		}
 

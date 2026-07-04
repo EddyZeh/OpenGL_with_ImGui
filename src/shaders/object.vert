@@ -9,13 +9,18 @@ out VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
+    vec4 FragPosLightSpace;
 } vs_out;
 
 uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
+
+uniform mat4 lightSpaceMatrix;
+
 uniform bool reverse_normals;
 uniform bool instanced;
+
 
 void main(){
     mat4 instancedModel = model;
@@ -25,18 +30,25 @@ void main(){
 
     instancedModel[3] += vec4(aOffset, 0.0);
 
-    if(reverse_normals)
+    if(reverse_normals){
         vs_out.Normal = transpose(inverse(mat3(model))) * (-1.0 * aNormal);
-    else
-        vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
-    vs_out.TexCoords = aTexCoords;
-    
-    if(instanced){
-        vs_out.FragPos = vec3(instancedModel * vec4(aPos, 1.0));
-        gl_Position = projection * view * vec4(vs_out.FragPos, 1.0);
     }
     else{
-        vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
+        vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
+    }
+    vs_out.TexCoords = aTexCoords;
+    
+    vec3 worldPos;
+
+    if(instanced){
+        worldPos = vec3(instancedModel * vec4(aPos, 1.0));
+        gl_Position = projection * view * vec4(worldPos, 1.0);
+    }
+    else{
+        worldPos = vec3(model * vec4(aPos, 1.0));
         gl_Position = projection * view * model * vec4(aPos, 1.0);
     }
+
+    vs_out.FragPos = worldPos;
+    vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(worldPos, 1.0);
 }
