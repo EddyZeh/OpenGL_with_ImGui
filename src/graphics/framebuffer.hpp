@@ -72,7 +72,8 @@ public:
 
 	void cleanup() {
 		// Delete RBO
-		glDeleteRenderbuffers(static_cast<GLsizei>(rbos.size()), &rbos[0]);
+		if(!rbos.empty())
+			glDeleteRenderbuffers(static_cast<GLsizei>(rbos.size()), &rbos[0]);
 
 		// Delete generated textures
 		for (auto& tex : textures)

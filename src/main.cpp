@@ -16,6 +16,9 @@
 #include "graphics/Camera.h"
 #include "graphics/framebuffer.hpp"
 #include "graphics/cubemap.h"
+#include "graphics/light.hpp"
+#include "graphics/postprocessor.hpp"
+#include "graphics/sceneobjects.hpp"
 
 
 // Memory
@@ -33,34 +36,23 @@
 #include "graphics/models/lamp.hpp"
 #include "graphics/models/sphere.hpp"
 
-void processInput(float deltaTime);
+void processInput(float deltaTime, PostProcessor &post);
 
 const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+const unsigned int SHADOW_RESOLUTION = 1024;
 
 //Screen screen;
 Scene scene(3, 3, "Graphics Engine", 800, 600);
 Camera cam1(glm::vec3(0.0f));
 
-Camera Camera::defaultCamera(glm::vec3(0.0f, 0.0f, 0.0f));
-
-static bool quadInit = false;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool blinn = false, shadows = true;
-
-enum PostProcessEffect {
-	NONE = 0,
-	INVERT,
-	GRAYSCALE,
-	SHARPEN,
-	EDGE,
-	SOBEL,
-	EMBOSS
-};
-PostProcessEffect currentEffect = PostProcessEffect::NONE;
+bool dirLightOn = true, spotLightOn = true;
 
 int main() {
 	Paths::init();
@@ -85,11 +77,12 @@ int main() {
 	scene.addCam(&cam1);
 
 	// SHADERS
-	Shader shader         (ResourceManager::createShader("object"));
-	Shader lampShader     (ResourceManager::createShader("object", std::string("lamp")));
-	Shader depthMapShader (ResourceManager::createShader("depthMap", true));
-	Shader fboShader      (ResourceManager::createShader("FBO"));
-	Shader skyboxShader   (ResourceManager::createShader("skybox"));
+	Shader shader            (ResourceManager::createShader("object"));
+	Shader lampShader        (ResourceManager::createShader("object", std::string("lamp")));
+	Shader depthMapShader    (ResourceManager::createShader("depthMap", true));
+	Shader planarDepthShader (ResourceManager::createShader("shadowMap"));
+	Shader fboShader         (ResourceManager::createShader("FBO"));
+	Shader skyboxShader      (ResourceManager::createShader("skybox"));
 
 	// TEXTURES
 	Texture containerTex	(ResourceManager::getTexturePath("container2.png"));
@@ -99,6 +92,7 @@ int main() {
 	containerSpec.load();
 	woodTex.load();
 	std::vector<Texture> textures = { containerTex, containerSpec };
+	std::vector<Texture> tex = { woodTex };
 
 	containerTex.bind();
 	
@@ -108,13 +102,10 @@ int main() {
 	skybox.init();
 	skybox.loadTextures(ResourceManager::getCubemapPath("nature"));
 
-	// MODELS
-	
-	CubeArray roomCube;
-	std::vector<Texture> tex = { woodTex };
-	roomCube.init(tex);
-	roomCube.cubeInstances.push_back({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f)});
-
+	// SCENE CONTENT
+	SceneObjects objects;
+	objects.init(tex, textures, Material::turquoise);
+	objects.roomCube.cubeInstances.push_back({ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f) });
 
 	std::vector<glm::vec3> cubesPos = {
 		glm::vec3(0.0f, 1.5f, -1.5f),
@@ -123,18 +114,9 @@ int main() {
 	};
 
 	std::vector<glm::vec3> cubeSizes = { glm::vec3(1.0f), glm::vec3(0.5f), glm::vec3(0.25f) };
-
-	CubeArray cubes;
-	cubes.init(textures);
 	for (int i = 0; i < 3; i++) {
-		cubes.cubeInstances.push_back({ cubesPos[i], cubeSizes[i] });
+		objects.cubes.cubeInstances.push_back({ cubesPos[i], cubeSizes[i] });
 	}
-
-	LampArray lamps;
-	lamps.init();
-	lamps.pointLightPos.push_back(glm::vec3(0.0f));
-	lamps.pointLightPos.push_back(glm::vec3(0.4f, -2.0f, 2.0f));
-	
 
 	std::vector<glm::vec3> spheresPos = {
 		glm::vec3(-1.0f, 1.5f, 1.0f),
@@ -142,80 +124,73 @@ int main() {
 	};
 
 	std::vector<glm::vec3> spheresSizes = { glm::vec3(1.0f), glm::vec3(0.5f) };
-	SphereArray spheres;
-	spheres.init(Material::turquoise);
 
 	for (int i = 0; i < 2; i++) {
-		spheres.sphereInstances.push_back({spheresPos[i], spheresSizes[i]});
+		objects.spheres.sphereInstances.push_back({spheresPos[i], spheresSizes[i]});
 	}
 
-	Model m(glm::vec3(2.0f, 1.5f, -1.0f), glm::vec3(0.01f), true);
-	m.loadModel(ResourceManager::getModelPath("m4a1/scene.gltf"));
-	Model m1(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f));
-	m1.loadModel(ResourceManager::getModelPath("lotr_troll/scene.gltf"));
+	objects.addModel(glm::vec3(2.0f, 1.5f, -1.0f), glm::vec3(0.01f), true, 
+					 ResourceManager::getModelPath("m4a1/scene.gltf"));
+	objects.addModel(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f), false, 
+					 ResourceManager::getModelPath("lotr_troll/scene.gltf"));
 
+	// LIGHTS
+	DirLight sun;
+	sun.direction = glm::vec3(-0.3f, -1.0f, -0.3f);
+	sun.ambient = glm::vec3(0.05f);
+	sun.diffuse = glm::vec3(0.35f);
+	sun.specular = glm::vec3(0.4f);
+	sun.shadowTarget = glm::vec3(0.0f);
+	sun.shadowDistance = 4.0f;
+	sun.shadowOrthoSize = 7.0f;
+	sun.shadowNear = 0.1f;
+	sun.shadowFar = 20.0f;
 
-	ArrayObject VAO;
-	VAO.generate();
-	VAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
-	VAO.bind();
-	VAO["VBO"].bind();
-	VAO["VBO"].setData<float>((GLuint)MeshData::Plane.vertices.size(), &MeshData::Plane.vertices[0], GL_STATIC_DRAW);
-	VAO["VBO"].setAttPointer<float>(0, 3, GL_FLOAT, 8, 0);
-	VAO["VB0"].setAttPointer<float>(1, 3, GL_FLOAT, 8, 3);
-	VAO["VB0"].setAttPointer<float>(2, 2, GL_FLOAT, 8, 6);
+	std::vector<PointLight> pointLights;
+	std::vector<SpotLight> spotLights;
 
-	ArrayObject fboVAO;
-	fboVAO.generate();
-	fboVAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
-	fboVAO.bind();
-	fboVAO["VBO"].bind();
-	fboVAO["VBO"].setData<float>((GLuint)MeshData::Quad.vertices.size(), MeshData::Quad.vertices.data(), GL_STATIC_DRAW);
-	fboVAO["VBO"].setAttPointer<float>(0, 2, GL_FLOAT, 4, 0);
-	fboVAO["VBO"].setAttPointer<float>(1, 2, GL_FLOAT, 4, 2);
+	pointLights.reserve(LightUnits::MAX_POINT_LIGHTS);
+	spotLights.reserve(LightUnits::MAX_SPOT_LIGHTS);
 
-	ArrayObject::clear();
+	std::vector<glm::vec3> pointLightPos = {
+		glm::vec3(0.0f),
+		glm::vec3(0.4f, -2.0f, 2.0f)
+	};
 
-
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-
-	unsigned int depthMapFBO;
-	glGenFramebuffers(1, &depthMapFBO);
-
-	std::vector<unsigned int> depthCubemaps(lamps.pointLightPos.size());
-
-	for (unsigned int i = 0; i < depthCubemaps.size(); i++) {
-
-		glGenTextures(1, &depthCubemaps[i]);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemaps[i]);
-		for (unsigned int j = 0; j < 6; j++) {
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, 0,
-				GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		}
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	for (const auto& pos : pointLightPos) {
+		PointLight pl = PointLight{pos, Material::white_plastic.ambient, 
+			Material::white_plastic.diffuse, Material::white_plastic.specular, 
+			1.0f, 0.09f, 0.032f};
+		pointLights.push_back(pl);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemaps[0], 0);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete!" << std::endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	SpotLight torch;
+	torch.position = scene.getActiveCamera()->cameraPos;
+	torch.direction = scene.getActiveCamera()->cameraFront;
+	torch.cutOff = glm::cos(glm::radians(12.5f));
+	torch.outerCutOff = glm::cos(glm::radians(20.0f));
+	torch.k0 = 1.0f;
+	torch.k1 = 0.09f;
+	torch.k2 = 0.032f;
+	torch.ambient = glm::vec3(0.0f);
+	torch.diffuse = glm::vec3(1.0f);
+	torch.specular = glm::vec3(1.0f);
+	spotLights.push_back(torch);
 
-	FramebufferObject fbo(Scene::SCR_WIDTH, Scene::SCR_HEIGHT, GL_COLOR_BUFFER_BIT);
-	fbo.generate();
-	fbo.allocateAndAttachTexture(GL_COLOR_ATTACHMENT0, GL_RGB, GL_UNSIGNED_BYTE);
-	fbo.attachRBO(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
-	FramebufferObject::bindDefault();
+	// SHADOW MAPS 
+	sun.initShadowMap(SHADOW_RESOLUTION);
+	for (auto& pl : pointLights)
+		pl.initShadowMap(SHADOW_RESOLUTION);
+	for (auto& sl : spotLights)
+		sl.initShadowMap(SHADOW_RESOLUTION);
 
+	for (const auto& pl : pointLights)
+		objects.lamps.pointLightPos.push_back(pl.position);
 
-	shader.activate();
-	shader.setInt("diffuseTexture", 0);
+	PostProcessor post;
+	post.init(Scene::SCR_WIDTH, Scene::SCR_HEIGHT);
+
+	LightUnits::configureSamplers(shader);
 
 	fboShader.activate();
 	fboShader.setInt("screenTexture", 0);
@@ -229,7 +204,7 @@ int main() {
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		processInput(deltaTime);
+		processInput(deltaTime, post);
 
 		// Start ImGui Frame
 		scene.frontendNewFrame();
@@ -239,58 +214,24 @@ int main() {
 
 		// SCENE RENDERING
 		glEnable(GL_DEPTH_TEST);
-		scene.update();
-		// 1st PASS (Rendering DepthMap) ======================
-			
-		float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
-		float near_plane = 1.0f, far_plane = 25.0f;
-		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		scene.update();		// 1st PASS (Rendering DepthMap) ======================
 
-		for (int i = 0; i < lamps.pointLightPos.size(); i++) {
+		if (dirLightOn)
+			sun.renderShadowPass(planarDepthShader, objects);
 
-			glm::vec3 lightPos = lamps.pointLightPos.at(i);
+		for (auto& pl : pointLights)
+			pl.renderShadowPass(depthMapShader, objects);
 
-			glm::mat4 shadowproj = glm::perspective(glm::radians(90.0f), aspect, near_plane, far_plane);
-
-			std::vector<glm::mat4> shadowTransforms;
-			shadowTransforms.push_back(shadowproj *
-				glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-			shadowTransforms.push_back(shadowproj *
-				glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-			shadowTransforms.push_back(shadowproj *
-				glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-			shadowTransforms.push_back(shadowproj *
-				glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-			shadowTransforms.push_back(shadowproj *
-				glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-			shadowTransforms.push_back(shadowproj *
-				glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-
-			// Attach light's depth cubemap texture
-			glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemaps[i], 0);
-
-			glClear(GL_DEPTH_BUFFER_BIT);
-			depthMapShader.activate();
-			for (unsigned int face = 0; face < 6; ++face)
-				depthMapShader.setMat4("shadowMatrices[" + std::to_string(face) + "]", shadowTransforms[face]);
-			depthMapShader.setFloat("far_plane", far_plane);
-			depthMapShader.set3Float("lightPos", lightPos);
-			depthMapShader.setBool("instanced", true);
-			roomCube.render(depthMapShader);
-			cubes.render(depthMapShader);
-			spheres.render(depthMapShader);
-			depthMapShader.setBool("instanced", false);
-			m.render(depthMapShader);
-			m1.render(depthMapShader);
+		if (spotLightOn) {
+			for (auto& sl : spotLights)
+				sl.renderShadowPass(planarDepthShader, objects);
 		}
-		FramebufferObject::bindDefault();
 		// END ==================================
 
 		
 		// RESET VIEWPORT
-		fbo.bind();
-		fbo.setViewport();
+
+		post.beginSceneCapture();
 		scene.update();
 
 		// 2nd PASS (Rendering normal scene)
@@ -303,82 +244,49 @@ int main() {
 		shader.activate();
 		scene.render(shader);
 		shader.setInt("shadows", shadows);
-		shader.setFloat("far_plane", far_plane);
-		shader.setInt("noPointLights", static_cast<int>(lamps.pointLightPos.size()));
-		for (int i = 0; i < lamps.pointLightPos.size(); i++) {
-			shader.set3Float("pointLights[" + std::to_string(i) + "].position", lamps.pointLightPos[i]);
-			shader.set3Float("pointLights[" + std::to_string(i) + "].ambient", Material::white_plastic.ambient);
-			shader.set3Float("pointLights[" + std::to_string(i) + "].diffuse", Material::white_plastic.diffuse);
-			shader.setFloat("pointLights[" + std::to_string(i) + "].k0", 1.0f);
-			shader.setFloat("pointLights[" + std::to_string(i) + "].k1", 0.09f);
-			shader.setFloat("pointLights[" + std::to_string(i) + "].k2", 0.032f);
+
+		shader.setBool("hasDirLight", dirLightOn);
+		if (dirLightOn)
+			sun.render(shader);
+
+		shader.setInt("noPointLights", static_cast<int>(pointLights.size()));
+		for (int i = 0; i < (int)pointLights.size(); i++)
+			pointLights[i].render(shader, i);
+
+		shader.setInt("noSpotLights", static_cast<int>(spotLights.size()));
+		if (spotLightOn) {
+			for (int i = 0; i < (int)spotLights.size(); i++)
+				spotLights[i].render(shader, i);
 		}
 
-		glActiveTexture(GL_TEXTURE0);
-		woodTex.bind();
-		for (int i = 0; i < lamps.pointLightPos.size(); i++) {
-			glActiveTexture(GL_TEXTURE2 + i);
-			shader.setInt("pointDepthMaps[" + std::to_string(i) + "]", i + 2);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemaps[i]);
-		}
-
-		shader.setBool("instanced", true);
-		shader.setInt("reverse_normals", 1);
-		roomCube.render(shader);
-		shader.setInt("reverse_normals", 0);
-		cubes.render(shader);
-		spheres.render(shader);
-		shader.setBool("instanced", false);
-		m.render(shader);
-		m1.render(shader);
+		objects.renderAll(shader);
 
 		lampShader.activate();
-		lampShader.setInt("reverse_normals", 0);
 		scene.render(lampShader);
-		lampShader.setBool("instanced", true);
-		lamps.render(lampShader);
-
+		objects.renderLamps(lampShader);
 
 		ArrayObject::clear();
 
-		FramebufferObject::bindDefault();
-		fbo.clear();
-		glDisable(GL_DEPTH_TEST);
-
-		fboShader.activate();
-		fboVAO.bind();
-		for (unsigned int i = 0; i < fbo.textures.size(); i++) {
-			glActiveTexture(GL_TEXTURE0 + i);
-			fbo.textures[i].bind();
-		}
-		fboShader.setInt("screenTexture", 0);
-		float screenWidth = static_cast<float>(Scene::SCR_WIDTH);
-		float screenHeight = static_cast<float>(Scene::SCR_HEIGHT);
-		fboShader.setFloat("screenWidth", screenWidth);
-		fboShader.setFloat("screenHeight", screenHeight);
-		fboShader.setInt("effect", currentEffect);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		post.render(fboShader);
 
 		// Render ImGui
 		scene.renderIMGUI();
 		// CHECK AND CALL EVENTS AND SWAP THE BUFFERS
 		scene.backendNewFrame();
 	}
-	cubes.cleanup();
-	spheres.cleanup();
-	roomCube.cleanup();
-	lamps.cleanup();
-	m.cleanup();
-	m1.cleanup();
-	glDeleteFramebuffers(1, &depthMapFBO);
-	fbo.cleanup();
-	skybox.cleanup();
 
+	objects.cleanup();
+	sun.cleanup();
+	for (auto& pl : pointLights)
+		pl.cleanup();
+	for (auto& sl : spotLights)
+		sl.cleanup();
+	skybox.cleanup();
 	scene.cleanup();
 	return 0;
 }
 
-void processInput(float deltaTime){
+void processInput(float deltaTime, PostProcessor &post){
 	// KEYBOARD =============================
 	scene.processInput(deltaTime);
 
@@ -389,31 +297,11 @@ void processInput(float deltaTime){
 		shadows = !shadows;
 	}
 
-	if (Keyboard::keyWentDown(GLFW_KEY_0)) {
-		currentEffect = PostProcessEffect::NONE;
-	}
-	if (Keyboard::keyWentDown(GLFW_KEY_1)) {
-		currentEffect = PostProcessEffect::INVERT;
-	}
+	if (Keyboard::keyWentDown(GLFW_KEY_K))
+		dirLightOn = !dirLightOn;
 
-	if (Keyboard::keyWentDown(GLFW_KEY_2)) {
-		currentEffect = PostProcessEffect::GRAYSCALE;
-	}
+	if (Keyboard::keyWentDown(GLFW_KEY_L))
+		spotLightOn = !spotLightOn;
 
-	if (Keyboard::keyWentDown(GLFW_KEY_3)) {
-		currentEffect = PostProcessEffect::SHARPEN;
-	}
-
-	if (Keyboard::keyWentDown(GLFW_KEY_4)) {
-		currentEffect = PostProcessEffect::EDGE;
-	}
-
-	if (Keyboard::keyWentDown(GLFW_KEY_5)) {
-		currentEffect = PostProcessEffect::SOBEL;
-	}
-
-	if (Keyboard::keyWentDown(GLFW_KEY_6)) {
-		currentEffect = PostProcessEffect::EMBOSS;
-	}
-
+	post.handleInput();
 }

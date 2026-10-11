@@ -5,7 +5,6 @@ in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
-    vec4 FragPosLightSpace;
 } fs_in;
 
 struct Material{
@@ -29,8 +28,9 @@ struct DirLight{
 uniform DirLight dirLight;
 uniform bool hasDirLight;
 uniform sampler2D dirDepthMap;
+uniform mat4 dirLightSpaceMatrix;
 
-#define MAX_POINT_LIGHTS 16
+#define MAX_POINT_LIGHTS 8
 struct PointLight{
     vec3 position;
         
@@ -46,7 +46,7 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform int noPointLights;
 uniform samplerCube pointDepthMaps[MAX_POINT_LIGHTS];
 
-#define MAX_SPOT_LIGHTS 5
+#define MAX_SPOT_LIGHTS 4
 struct SpotLight{
     vec3 position;
     vec3 direction;
@@ -98,14 +98,24 @@ void main(){
     vec3 norm = normalize(fs_in.Normal);
    vec3 result = vec3(0.0);
 
+   if(hasDirLight){
+        result += DirLightCalculation(norm, diffuseColor, specularColor);
+   }
+
    for(int i = 0; i < noPointLights; i++){
         result += PointLightCalc(i, norm, diffuseColor, specularColor);
+   }
+
+   for(int i = 0; i < noSpotLights; i++){
+        result += SpotLightCalculation(i, norm, diffuseColor, specularColor);
    }
     
     FragColor =vec4(result, 1.0f);
 }
 
-float DirShadowCalculation(vec4 fragPosLightSpace){
+float DirShadowCalculation(vec3 fragPos){
+    vec4 fragPosLightSpace = dirLightSpaceMatrix * vec4(fragPos, 1.0);
+
     // perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 
@@ -153,7 +163,7 @@ vec3 DirLightCalculation(vec3 norm, vec3 diffuseColor, vec3 specularColor){
     float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
     vec3 specular = dirLight.specular * (spec * specularColor);
 
-    float shadow = shadows? DirShadowCalculation(fs_in.FragPosLightSpace) : 0.0;
+    float shadow = shadows? DirShadowCalculation(fs_in.FragPos) : 0.0;
 
     return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
@@ -213,7 +223,9 @@ vec3 PointLightCalc(int i, vec3 norm, vec3 diffuseColor, vec3 specularColor){
     return lighting;
 }
 
-float SpotShadowCalculation(int i, vec4 fragPosLightSpace){
+float SpotShadowCalculation(int i, vec3 fragPos){
+    vec4 fragPosLightSpace = spotLightSpaceMatrix[i] * vec4(fragPos, 1.0);
+
     // perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 
@@ -275,7 +287,7 @@ vec3 SpotLightCalculation(int i, vec3 norm, vec3 diffuseColor, vec3 specularColo
         diffuse *= attenuation;
         specular *= attenuation;
 
-        float shadow = shadows? SpotShadowCalculation(i, fs_in.FragPosLightSpace) : 0.0;
+        float shadow = shadows? SpotShadowCalculation(i, fs_in.FragPos) : 0.0;
         vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular));
 
         return lighting;

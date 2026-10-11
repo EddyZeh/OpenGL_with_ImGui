@@ -22,6 +22,8 @@ public:
 	void loadModel(std::string path);
 
 	void cleanup();
+	
+	virtual ~Model() = default;
 
 private:
 	std::string directory;

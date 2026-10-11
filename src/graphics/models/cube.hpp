@@ -48,6 +48,7 @@ public:
             shader.setBool("noTex", noTex);
             shader.set3Float("material.diffuseColor", material.diffuse);
             shader.set3Float("material.specularColor", material.specular);
+            shader.setFloat("material.shininess", material.shininess * 128.0f);
         }
         else {
             shader.setBool("noTex", noTex);
