@@ -18,6 +18,7 @@ struct Material{
 };
 uniform Material material;
 
+
 struct DirLight{
     vec3 direction;
 
@@ -73,13 +74,13 @@ uniform float far_plane;
 uniform bool shadows;
 uniform bool noTex;
 
-float DirShadowCalculation(vec4 fragPosLightSpace);
+float DirShadowCalculation(vec3 fragPos);
 vec3 DirLightCalculation(vec3 norm, vec3 diffuseColor, vec3 specularColor);
 
 float PointShadowCalculation(int i, vec3 fragPos);
 vec3 PointLightCalc(int i, vec3 norm, vec3 diffuseColor, vec3 specularColor);
 
-float SpotShadowCalculation(int i, vec4 fragPosLightSpace);
+float SpotShadowCalculation(int i, vec3 fragPos);
 vec3 SpotLightCalculation(int i, vec3 norm, vec3 diffuseColor, vec3 specularColor);
 
 vec3 diffuseColor;
@@ -96,21 +97,21 @@ void main(){
     }
 
     vec3 norm = normalize(fs_in.Normal);
-   vec3 result = vec3(0.0);
+    vec3 result = vec3(0.0);
 
-   if(hasDirLight){
+    if(hasDirLight){
         result += DirLightCalculation(norm, diffuseColor, specularColor);
-   }
+    }
 
-   for(int i = 0; i < noPointLights; i++){
+    for(int i = 0; i < noPointLights; i++){
         result += PointLightCalc(i, norm, diffuseColor, specularColor);
-   }
+    }
 
-   for(int i = 0; i < noSpotLights; i++){
+    for(int i = 0; i < noSpotLights; i++){
         result += SpotLightCalculation(i, norm, diffuseColor, specularColor);
-   }
-    
-    FragColor =vec4(result, 1.0f);
+    }
+
+    FragColor = vec4(result, 1.0f);
 }
 
 float DirShadowCalculation(vec3 fragPos){
@@ -128,7 +129,7 @@ float DirShadowCalculation(vec3 fragPos){
 
     float currentDepth = projCoords.z;
 
-    float bias = max(0.005 * (1.0 - dot(fs_in.Normal, -dirLight.direction)), 0.001);
+    float bias = max(0.005 * (1.0 - dot(normalize(fs_in.Normal), normalize(-dirLight.direction))), 0.001);
 
     // PCF
     float shadow = 0.0;
@@ -237,7 +238,8 @@ float SpotShadowCalculation(int i, vec3 fragPos){
 
     float currentDepth = projCoords.z;
 
-    float bias = max(0.005 * (1.0 - dot(fs_in.Normal, -dirLight.direction)), 0.001);
+    // bias against this spot light's own direction
+    float bias = max(0.005 * (1.0 - dot(normalize(fs_in.Normal), normalize(-spotLights[i].direction))), 0.001);
     float shadow = 0;
     vec2 texelSize = 1.0 / textureSize(spotDepthMaps[i], 0);
 

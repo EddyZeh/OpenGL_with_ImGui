@@ -6,15 +6,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
+#include <vector>
 
 
 // graphics
 #include "graphics/scene.h"
-#include "graphics/Screen.h"
+#include "graphics/screen.h"
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 #include "graphics/Camera.h"
-#include "graphics/framebuffer.hpp"
 #include "graphics/cubemap.h"
 #include "graphics/light.hpp"
 #include "graphics/postprocessor.hpp"
@@ -31,14 +31,9 @@
 #include "io/Keyboard.h"
 #include "io/Joystick.h"
 
-// primitive shape models
-#include "graphics/models/cube.hpp"
-#include "graphics/models/lamp.hpp"
-#include "graphics/models/sphere.hpp"
+void processInput(float deltaTime, PostProcessor& post);
 
-void processInput(float deltaTime, PostProcessor &post);
-
-const unsigned int SCR_WIDTH  = 800;
+const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const unsigned int SHADOW_RESOLUTION = 1024;
@@ -47,12 +42,15 @@ const unsigned int SHADOW_RESOLUTION = 1024;
 Scene scene(3, 3, "Graphics Engine", 800, 600);
 Camera cam1(glm::vec3(0.0f));
 
+Camera Camera::defaultCamera(glm::vec3(0.0f, 0.0f, 0.0f));
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-bool blinn = false, shadows = true;
-bool dirLightOn = true, spotLightOn = true;
+bool blinn = false;			// TODO: not read by any shader yet
+bool shadows = true;
+bool dirLightOn = true;
+bool spotLightsOn = true;
 
 int main() {
 	Paths::init();
@@ -77,25 +75,23 @@ int main() {
 	scene.addCam(&cam1);
 
 	// SHADERS
-	Shader shader            (ResourceManager::createShader("object"));
-	Shader lampShader        (ResourceManager::createShader("object", std::string("lamp")));
-	Shader depthMapShader    (ResourceManager::createShader("depthMap", true));
-	Shader planarDepthShader (ResourceManager::createShader("shadowMap"));
-	Shader fboShader         (ResourceManager::createShader("FBO"));
-	Shader skyboxShader      (ResourceManager::createShader("skybox"));
+	Shader shader(ResourceManager::createShader("object"));
+	Shader lampShader(ResourceManager::createShader("object", std::string("lamp")));
+	Shader pointDepthShader(ResourceManager::createShader("depthMap", true));	// vert + geom + frag, writes a cubemap
+	Shader planarDepthShader(ResourceManager::createShader("shadowMap"));		// one 2D depth map, dir + spot
+	Shader fboShader(ResourceManager::createShader("FBO"));
+	Shader skyboxShader(ResourceManager::createShader("skybox"));
 
 	// TEXTURES
-	Texture containerTex	(ResourceManager::getTexturePath("container2.png"));
-	Texture containerSpec	(ResourceManager::getTexturePath("container2_specular.png"));
-	Texture woodTex			(ResourceManager::getTexturePath("wood.png"));
+	Texture containerTex(ResourceManager::getTexturePath("container2.png"));
+	Texture containerSpec(ResourceManager::getTexturePath("container2_specular.png"));
+	Texture woodTex(ResourceManager::getTexturePath("wood.png"));
 	containerTex.load();
 	containerSpec.load();
 	woodTex.load();
-	std::vector<Texture> textures = { containerTex, containerSpec };
-	std::vector<Texture> tex = { woodTex };
 
-	containerTex.bind();
-	
+	std::vector<Texture> containerTextures = { containerTex, containerSpec };
+	std::vector<Texture> woodTextures = { woodTex };
 
 	// Cubemap
 	Cubemap skybox;
@@ -104,15 +100,15 @@ int main() {
 
 	// SCENE CONTENT
 	SceneObjects objects;
-	objects.init(tex, textures, Material::turquoise);
-	objects.roomCube.cubeInstances.push_back({ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(10.0f) });
+	objects.init(woodTextures, containerTextures, Material::turquoise);
+
+	objects.roomCube.cubeInstances.push_back({ glm::vec3(0.0f), glm::vec3(10.0f) });
 
 	std::vector<glm::vec3> cubesPos = {
 		glm::vec3(0.0f, 1.5f, -1.5f),
 		glm::vec3(2.0f, 0.0f, 1.0f),
 		glm::vec3(-1.0f, 0.0f, 2.0f)
 	};
-
 	std::vector<glm::vec3> cubeSizes = { glm::vec3(1.0f), glm::vec3(0.5f), glm::vec3(0.25f) };
 	for (int i = 0; i < 3; i++) {
 		objects.cubes.cubeInstances.push_back({ cubesPos[i], cubeSizes[i] });
@@ -122,19 +118,16 @@ int main() {
 		glm::vec3(-1.0f, 1.5f, 1.0f),
 		glm::vec3(-2.0f, 0.0f, -1.0f)
 	};
-
 	std::vector<glm::vec3> spheresSizes = { glm::vec3(1.0f), glm::vec3(0.5f) };
-
 	for (int i = 0; i < 2; i++) {
-		objects.spheres.sphereInstances.push_back({spheresPos[i], spheresSizes[i]});
+		objects.spheres.sphereInstances.push_back({ spheresPos[i], spheresSizes[i] });
 	}
 
-	objects.addModel(glm::vec3(2.0f, 1.5f, -1.0f), glm::vec3(0.01f), true, 
-					 ResourceManager::getModelPath("m4a1/scene.gltf"));
-	objects.addModel(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f), false, 
-					 ResourceManager::getModelPath("lotr_troll/scene.gltf"));
+	objects.addModel(glm::vec3(2.0f, 1.5f, -1.0f), glm::vec3(0.01f), true,
+		ResourceManager::getModelPath("m4a1/scene.gltf"));
+	objects.addModel(glm::vec3(2.0f, 1.5f, 0.0f), glm::vec3(0.01f), false,
+		ResourceManager::getModelPath("lotr_troll/scene.gltf"));
 
-	// LIGHTS
 	DirLight sun;
 	sun.direction = glm::vec3(-0.3f, -1.0f, -0.3f);
 	sun.ambient = glm::vec3(0.05f);
@@ -156,11 +149,15 @@ int main() {
 		glm::vec3(0.0f),
 		glm::vec3(0.4f, -2.0f, 2.0f)
 	};
-
 	for (const auto& pos : pointLightPos) {
-		PointLight pl = PointLight{pos, Material::white_plastic.ambient, 
-			Material::white_plastic.diffuse, Material::white_plastic.specular, 
-			1.0f, 0.09f, 0.032f};
+		PointLight pl;
+		pl.position = pos;
+		pl.ambient = Material::white_plastic.ambient;
+		pl.diffuse = Material::white_plastic.diffuse;
+		pl.specular = Material::white_plastic.specular;
+		pl.k0 = 1.0f;
+		pl.k1 = 0.09f;
+		pl.k2 = 0.032f;
 		pointLights.push_back(pl);
 	}
 
@@ -177,19 +174,22 @@ int main() {
 	torch.specular = glm::vec3(1.0f);
 	spotLights.push_back(torch);
 
-	// SHADOW MAPS 
+	// SHADOW MAPS (after the light lists are final)
 	sun.initShadowMap(SHADOW_RESOLUTION);
 	for (auto& pl : pointLights)
 		pl.initShadowMap(SHADOW_RESOLUTION);
 	for (auto& sl : spotLights)
 		sl.initShadowMap(SHADOW_RESOLUTION);
 
+	// lamp markers sit on the point lights
 	for (const auto& pl : pointLights)
 		objects.lamps.pointLightPos.push_back(pl.position);
 
+	// POST PROCESSING
 	PostProcessor post;
 	post.init(Scene::SCR_WIDTH, Scene::SCR_HEIGHT);
 
+	// one-time shader state
 	LightUnits::configureSamplers(shader);
 
 	fboShader.activate();
@@ -210,40 +210,33 @@ int main() {
 		scene.frontendNewFrame();
 
 		// ImGui UI
-		
 
-		// SCENE RENDERING
+
 		glEnable(GL_DEPTH_TEST);
-		scene.update();		// 1st PASS (Rendering DepthMap) ======================
 
+		// 1st PASS: depth maps, one per shadow casting light
 		if (dirLightOn)
 			sun.renderShadowPass(planarDepthShader, objects);
 
 		for (auto& pl : pointLights)
-			pl.renderShadowPass(depthMapShader, objects);
+			pl.renderShadowPass(pointDepthShader, objects);
 
-		if (spotLightOn) {
+		if (spotLightsOn) {
+			torch.position = scene.cameraPos;
+			torch.direction = scene.getActiveCamera()->cameraFront;
 			for (auto& sl : spotLights)
 				sl.renderShadowPass(planarDepthShader, objects);
 		}
-		// END ==================================
 
-		
-		// RESET VIEWPORT
-
+		// 2nd PASS: the scene, captured into the post-processing buffer
 		post.beginSceneCapture();
 		scene.update();
 
-		// 2nd PASS (Rendering normal scene)
-		glm::mat4 view = scene.getActiveCamera()->getViewMatrix();
-		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(scene.getActiveCamera()->getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.f);
-
-		skybox.render(skyboxShader, view, projection);
+		skybox.render(skyboxShader, scene.view, scene.projection);
 
 		shader.activate();
 		scene.render(shader);
-		shader.setInt("shadows", shadows);
+		shader.setBool("shadows", shadows);
 
 		shader.setBool("hasDirLight", dirLightOn);
 		if (dirLightOn)
@@ -253,8 +246,8 @@ int main() {
 		for (int i = 0; i < (int)pointLights.size(); i++)
 			pointLights[i].render(shader, i);
 
-		shader.setInt("noSpotLights", static_cast<int>(spotLights.size()));
-		if (spotLightOn) {
+		shader.setInt("noSpotLights", spotLightsOn ? static_cast<int>(spotLights.size()) : 0);
+		if (spotLightsOn) {
 			for (int i = 0; i < (int)spotLights.size(); i++)
 				spotLights[i].render(shader, i);
 		}
@@ -267,6 +260,7 @@ int main() {
 
 		ArrayObject::clear();
 
+		// 3rd PASS: blit the captured frame to the screen
 		post.render(fboShader);
 
 		// Render ImGui
@@ -276,17 +270,21 @@ int main() {
 	}
 
 	objects.cleanup();
+
 	sun.cleanup();
 	for (auto& pl : pointLights)
 		pl.cleanup();
 	for (auto& sl : spotLights)
 		sl.cleanup();
+
+	post.cleanup();
 	skybox.cleanup();
+
 	scene.cleanup();
 	return 0;
 }
 
-void processInput(float deltaTime, PostProcessor &post){
+void processInput(float deltaTime, PostProcessor& post) {
 	// KEYBOARD =============================
 	scene.processInput(deltaTime);
 
@@ -296,12 +294,12 @@ void processInput(float deltaTime, PostProcessor &post){
 	if (Keyboard::keyWentDown(GLFW_KEY_Y)) {
 		shadows = !shadows;
 	}
-
-	if (Keyboard::keyWentDown(GLFW_KEY_K))
+	if (Keyboard::keyWentDown(GLFW_KEY_K)) {
 		dirLightOn = !dirLightOn;
-
-	if (Keyboard::keyWentDown(GLFW_KEY_L))
-		spotLightOn = !spotLightOn;
+	}
+	if (Keyboard::keyWentDown(GLFW_KEY_L)) {
+		spotLightsOn = !spotLightsOn;
+	}
 
 	post.handleInput();
 }

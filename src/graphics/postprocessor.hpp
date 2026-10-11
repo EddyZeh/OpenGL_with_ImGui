@@ -13,7 +13,6 @@
 #include "../memory/glMemory.hpp"
 #include "../io/Keyboard.h"
 
-
 enum class PostProcessEffect {
 	NONE = 0,
 	INVERT,
@@ -43,6 +42,7 @@ public:
 
 		FramebufferObject::bindDefault();
 
+		// fullscreen quad (pos.xy, uv)
 		quadVAO.generate();
 		quadVAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
 		quadVAO.bind();
@@ -81,6 +81,7 @@ public:
 		ArrayObject::clear();
 	}
 
+	// number keys pick the effect
 	void handleInput() {
 		if (Keyboard::keyWentDown(GLFW_KEY_0)) currentEffect = PostProcessEffect::NONE;
 		if (Keyboard::keyWentDown(GLFW_KEY_1)) currentEffect = PostProcessEffect::INVERT;

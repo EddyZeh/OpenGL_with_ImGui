@@ -2,6 +2,7 @@
 #define PLANAR_SHADOW_MAP_HPP
 
 #include <glad/glad.h>
+
 #include <glm/glm.hpp>
 
 #include <iostream>
@@ -19,10 +20,10 @@ public:
 		fbo.generate();
 		fbo.bind();
 
-		// depth-only attachment, no color buffer
+		// depth-only attachment, no colour buffer
 		fbo.allocateAndAttachTexture(GL_DEPTH_ATTACHMENT, GL_DEPTH_COMPONENT, GL_FLOAT);
 
-		// clamp to a white border so anything outside	the light's frustrum reads as lit
+		// clamp to a white border so anything outside the light's frustum reads as lit
 		glBindTexture(GL_TEXTURE_2D, fbo.textures.back().id);
 		Texture::setParams(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 		float border[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -37,8 +38,9 @@ public:
 		FramebufferObject::bindDefault();
 	}
 
+	// bind the map, clear it and prime the depth program for one pass
 	void beginPass(const glm::mat4& lightSpaceMatrix, Shader& depthShader) {
-		fbo.activate();
+		fbo.activate();	// bind + viewport + clear depth
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -61,9 +63,8 @@ public:
 		fbo.cleanup();
 	}
 
-	unsigned int getWidth() const { return width;  }
+	unsigned int getWidth()  const { return width; }
 	unsigned int getHeight() const { return height; }
-
 
 private:
 	FramebufferObject fbo;

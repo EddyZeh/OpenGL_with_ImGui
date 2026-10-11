@@ -2,11 +2,13 @@
 #define POINT_SHADOW_MAP_HPP
 
 #include <glad/glad.h>
+
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "../framebuffer.hpp"
 #include "../Shader.h"
@@ -23,12 +25,11 @@ public:
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0,
 				GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		}
-
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		glGenFramebuffers(1, &fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -42,6 +43,7 @@ public:
 		FramebufferObject::bindDefault();
 	}
 
+	// the six 90 degree views that cover the cube, in cubemap face order
 	std::vector<glm::mat4> getShadowTransforms(glm::vec3 lightPos, float nearPlane, float farPlane) const {
 		float aspect = (float)width / (float)height;
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
@@ -57,15 +59,15 @@ public:
 		return transforms;
 	}
 
+	// bind the cubemap, clear it and prime the depth program for one pass
 	void beginPass(const std::vector<glm::mat4>& shadowTransforms, glm::vec3 lightPos, float farPlane, Shader& depthShader) {
 		glViewport(0, 0, width, height);
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
 		depthShader.activate();
-		for (unsigned int face = 0; face < 6; face++) {
+		for (unsigned int face = 0; face < shadowTransforms.size(); face++)
 			depthShader.setMat4("shadowMatrices[" + std::to_string(face) + "]", shadowTransforms[face]);
-		}
 		depthShader.setFloat("far_plane", farPlane);
 		depthShader.set3Float("lightPos", lightPos);
 	}
@@ -84,7 +86,7 @@ public:
 		glDeleteFramebuffers(1, &fbo);
 	}
 
-	unsigned int getWidth() const { return width; }
+	unsigned int getWidth()  const { return width; }
 	unsigned int getHeight() const { return height; }
 
 private:
@@ -93,7 +95,6 @@ private:
 
 	unsigned int width = 0;
 	unsigned int height = 0;
-
 };
 
 #endif // !POINT_SHADOW_MAP_HPP

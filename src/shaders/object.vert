@@ -9,14 +9,11 @@ out VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
-   // vec4 FragPosLightSpace;
 } vs_out;
 
 uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
-
-//uniform mat4 lightSpaceMatrix;
 
 uniform bool reverse_normals;
 uniform bool instanced;
@@ -37,7 +34,7 @@ void main(){
         vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
     }
     vs_out.TexCoords = aTexCoords;
-    
+
     vec3 worldPos;
 
     if(instanced){
@@ -50,5 +47,4 @@ void main(){
     }
 
     vs_out.FragPos = worldPos;
-   // vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(worldPos, 1.0);
 }

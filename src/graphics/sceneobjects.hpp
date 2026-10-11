@@ -15,15 +15,16 @@
 #include "models/sphere.hpp"
 
 struct SceneObjects {
-	CubeArray roomCube;
+	CubeArray roomCube;	
 	CubeArray cubes;
 	SphereArray spheres;
-	LampArray lamps;
+	LampArray lamps;		
 
 	std::vector<std::unique_ptr<Model>> models;
 
 	void init(const std::vector<Texture>& roomTextures,
-			 const std::vector<Texture>& cubeTextures, Material sphereMaterial) {
+		const std::vector<Texture>& cubeTextures,
+		Material sphereMaterial) {
 		roomCube.init(roomTextures);
 		cubes.init(cubeTextures);
 		spheres.init(sphereMaterial);
@@ -42,13 +43,12 @@ struct SceneObjects {
 		cubes.render(shader);
 		spheres.render(shader);
 
-		shader.setBool("instanced", false)
-			;
+		shader.setBool("instanced", false);
 		for (auto& model : models)
 			model->render(shader);
 	}
 
-	// the color pass
+	// the colour pass
 	void renderAll(Shader& shader) {
 		shader.setBool("instanced", true);
 		shader.setInt("reverse_normals", 1);
