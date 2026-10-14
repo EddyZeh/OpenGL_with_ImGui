@@ -37,7 +37,7 @@ bool Scene::init() {
 	}
 
 	// set up sceen
-	glViewport(0, 0, SCR_HEIGHT, SCR_HEIGHT);
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 	// Callback
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);

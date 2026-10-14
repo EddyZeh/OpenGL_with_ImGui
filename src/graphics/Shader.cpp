@@ -80,19 +80,19 @@ void Shader::setUniformBlockBinding(const char* name, int idx){
 }
 
 void Shader::setBool(const std::string& name, bool value) const{
-	glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value);
+	glUniform1i(getUniformLocation(name), (int)value);
 }
 
 void Shader::setInt(const std::string& name, int value) const{
-	glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+	glUniform1i(getUniformLocation(name), value);
 }
 
 void Shader::setFloat(const std::string& name, float value) const{
-	glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+	glUniform1f(getUniformLocation(name), value);
 }
 
 void Shader::set2Float(const std::string& name, float v1, float v2) const{
-	glUniform2f(glGetUniformLocation(id, name.c_str()), v1, v2);
+	glUniform2f(getUniformLocation(name), v1, v2);
 }
 
 void Shader::set2Float(const std::string& name, glm::vec2 v) const{
@@ -104,7 +104,7 @@ void Shader::set3Float(const std::string& name, glm::vec3 v) const{
 }
 
 void Shader::set3Float(const std::string& name, float v1, float v2, float v3) const{
-	glUniform3f(glGetUniformLocation(id, name.c_str()), v1, v2, v3);
+	glUniform3f(getUniformLocation(name), v1, v2, v3);
 }
 
 void Shader::set4Float(const std::string& name, glm::vec4 v) const{
@@ -112,13 +112,26 @@ void Shader::set4Float(const std::string& name, glm::vec4 v) const{
 }
 
 void Shader::set4Float(const std::string& name, float v1, float v2, float v3, float v4) const{
-	glUniform4f(glGetUniformLocation(id, name.c_str()), v1, v2, v3, v4);
+	glUniform4f(getUniformLocation(name), v1, v2, v3, v4);
 }
 
 void Shader::setMat4(const std::string& name, glm::mat4 val) const{
-	glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, glm::value_ptr(val));
+	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(val));
 }
 
 Shader::~Shader(){
 	glDeleteProgram(id);
+}
+
+GLuint Shader::getUniformLocation(const std::string& name) const{
+	auto it = uniformLocations.find(name);
+	
+	if (it != uniformLocations.end()) {
+		return it->second;
+	}
+
+	GLuint location = glGetUniformLocation(id, name.c_str());
+	uniformLocations.emplace(name, location);
+
+	return location;
 }

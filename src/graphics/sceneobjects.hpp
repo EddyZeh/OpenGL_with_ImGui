@@ -22,6 +22,8 @@ struct SceneObjects {
 
 	std::vector<std::unique_ptr<Model>> models;
 
+	bool showRoom = true;
+
 	void init(const std::vector<Texture>& roomTextures,
 		const std::vector<Texture>& cubeTextures,
 		Material sphereMaterial) {

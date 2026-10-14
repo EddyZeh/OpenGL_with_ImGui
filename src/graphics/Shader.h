@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 
 #include <string>
+#include <unordered_map>
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -44,6 +45,10 @@ public:
 	void setMat4(const std::string& name, glm::mat4 val) const;
 	~Shader();
 
+private:
+	mutable std::unordered_map<std::string, GLuint> uniformLocations;
+
+	GLuint getUniformLocation(const std::string& name) const;
 };
 
 #endif // !SHADER_H

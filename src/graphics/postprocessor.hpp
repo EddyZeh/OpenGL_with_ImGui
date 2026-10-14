@@ -53,6 +53,29 @@ public:
 		ArrayObject::clear();
 	}
 
+	void resize(unsigned int newWidth, unsigned int newHeight) {
+		if (newWidth == 0 || newHeight == 0) return;           
+		if (newWidth == width && newHeight == height) return; 
+
+		fbo.cleanup();
+		fbo.rbos.clear();       // see note below
+		fbo.textures.clear();
+
+		width = newWidth;
+		height = newHeight;
+
+		fbo = FramebufferObject(width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		fbo.generate();
+		fbo.bind();
+		fbo.allocateAndAttachTexture(GL_COLOR_ATTACHMENT0, GL_RGB, GL_UNSIGNED_BYTE);
+		fbo.attachRBO(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH24_STENCIL8);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Post-processing framebuffer not complete!" << std::endl;
+
+		FramebufferObject::bindDefault();
+	}
+
 	void beginSceneCapture() {
 		fbo.bind();
 		fbo.setViewport();

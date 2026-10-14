@@ -40,7 +40,6 @@ const unsigned int SCR_HEIGHT = 600;
 
 const unsigned int SHADOW_RESOLUTION = 1024;
 
-//Screen screen;
 Scene scene(3, 3, "Graphics Engine", 800, 600);
 Camera cam1(glm::vec3(0.0f));
 
@@ -58,7 +57,7 @@ bool quadRendered = false;
 bool showSkybox = true;		// off falls back to a flat background colour
 bool showGrid = true;
 
-const glm::vec3 MONO_BACKGROUND = glm::vec3(0.11f, 0.12f, 0.14f);
+const glm::vec3 MONO_BACKGROUND = glm::vec3(0.784f, 0.388f, 0.478f);
 const glm::vec3 SKY_BACKGROUND = glm::vec3(0.10f, 0.10f, 0.10f);
 
 int main() {
@@ -255,6 +254,7 @@ int main() {
 		const glm::vec3 background = showSkybox ? SKY_BACKGROUND : MONO_BACKGROUND;
 		scene.setWindowColor(background.r, background.g, background.b, 1.0f);
 		
+		post.resize(Scene::SCR_WIDTH, Scene::SCR_HEIGHT);
 		post.beginSceneCapture();
 		scene.update();
 
@@ -301,11 +301,11 @@ int main() {
 		brickwall_normal.bind();
 		renderQuad();
 
-		/*
+		
 		lampShader.activate();
 		scene.render(lampShader);
 		objects.renderLamps(lampShader);
-		*/
+		
 		ArrayObject::clear();
 
 		// 3rd PASS: blit the captured frame to the screen
