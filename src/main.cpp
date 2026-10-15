@@ -239,6 +239,15 @@ int main() {
 		glEnable(GL_DEPTH_TEST);
 		
 		// 1st PASS: depth maps, one per shadow casting light
+		Camera* cam = scene.getActiveCamera();
+		glm::vec3 front = glm::normalize(cam->cameraFront);
+		glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0, 1, 0)));
+		glm::vec3 up = glm::cross(right, front);
+		torch.position = cam->cameraPos + right * 0.25f - up * 0.2f + front * 0.1f;
+		glm::vec3 target = cam->cameraPos + front * 10.0f;
+
+		torch.direction = glm::normalize(target - torch.position);
+
 		if (dirLightOn)
 			sun.renderShadowPass(planarDepthShader, objects);
 
@@ -281,8 +290,6 @@ int main() {
 			pointLights[i].render(shader, i);
 
 		shader.setInt("noSpotLights", spotLightsOn ? static_cast<int>(spotLights.size()) : 0);
-		torch.position = scene.getActiveCamera()->cameraPos;
-		torch.direction = scene.getActiveCamera()->cameraFront;
 		if (spotLightsOn) {
 			for (int i = 0; i < (int)spotLights.size(); i++)
 				spotLights[i]->render(shader, i);

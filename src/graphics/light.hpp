@@ -166,11 +166,11 @@ struct SpotLight {
 	glm::vec3 specular;
 
 	PlanarShadowMap shadowMap;
-	float shadowNear = 0.5f;
+	float shadowNear = 0.1f;
 	float shadowFar = 30.0f;
 
 	void initShadowMap(unsigned int resolution = 1024) {
-		shadowMap.init(resolution, resolution);
+		shadowMap.init(resolution, resolution);	
 	}
 
 	glm::mat4 getLightSpaceMatrix() const {
