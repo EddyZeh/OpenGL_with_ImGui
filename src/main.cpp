@@ -57,7 +57,7 @@ bool quadRendered = false;
 bool showSkybox = true;		// off falls back to a flat background colour
 bool showGrid = true;
 
-const glm::vec3 MONO_BACKGROUND = glm::vec3(0.784f, 0.388f, 0.478f);
+const glm::vec3 MONO_BACKGROUND = glm::vec3(0.11f, 0.12f, 0.14f);
 const glm::vec3 SKY_BACKGROUND = glm::vec3(0.10f, 0.10f, 0.10f);
 
 int main() {

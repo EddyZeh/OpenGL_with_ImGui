@@ -8,7 +8,7 @@
 
 class BufferObject {
 public:
-	GLuint val;		// value location
+	GLuint val = 0;		// value location
 	GLenum type;	// type of buffer (GL_ARRAY_BUFFER | GL_ELEMENT_ARRAY, etc)
 
 	BufferObject(){ }
@@ -56,14 +56,15 @@ public:
 
 	// clear
 	void cleanup() {
-		glDeleteBuffers(1, &val);
+		if(val != 0)
+			glDeleteBuffers(1, &val);
 	}
 };
 
 class ArrayObject {
 
 public:
-	GLuint val;			// value / location
+	GLuint val = 0;			// value / location
 
 	std::map<const char*, BufferObject> buffers;
 
@@ -92,6 +93,8 @@ public:
 	}
 
 	void cleanup() {
+		if (val == 0)
+			return;
 		glDeleteVertexArrays(1, &val);
 		for (auto& pair : buffers) {
 			pair.second.cleanup();
