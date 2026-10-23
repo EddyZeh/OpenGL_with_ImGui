@@ -20,6 +20,7 @@
 #include "graphics/postprocessor.hpp"
 #include "graphics/sceneobjects.hpp"
 #include "graphics/gridfloor.hpp"
+#include "graphics/lightcone.hpp"
 
 
 // Memory
@@ -56,6 +57,7 @@ bool quadRendered = false;
 
 bool showSkybox = true;		// off falls back to a flat background colour
 bool showGrid = true;
+bool showBeam = true;		// visible light shaft of the torch
 
 const glm::vec3 MONO_BACKGROUND = glm::vec3(0.11f, 0.12f, 0.14f);
 const glm::vec3 SKY_BACKGROUND = glm::vec3(0.10f, 0.10f, 0.10f);
@@ -91,6 +93,7 @@ int main() {
 	Shader skyboxShader(ResourceManager::createShader("skybox"));
 	Shader normalMapShader(ResourceManager::createShader("normal_mapping"));
 	Shader gridShader(ResourceManager::createShader("grid"));
+	Shader lightConeShader(ResourceManager::createShader("lightcone"));		// ray-marched beam for the torch
 
 	// TEXTURES
 	Texture containerTex(ResourceManager::getTexturePath("container2.png"));
@@ -188,6 +191,10 @@ int main() {
 	torch.specular = glm::vec3(1.0f);
 	spotLights.push_back(&torch);
 
+	// visible beam of the torch, shaped from its cutoff angle
+	LightCone torchBeam;
+	torchBeam.init(torch, 15.0f);
+
 	// SHADOW MAPS (after the light lists are final)
 	sun.initShadowMap(SHADOW_RESOLUTION);
 	for (auto& pl : pointLights)
@@ -237,7 +244,7 @@ int main() {
 
 
 		glEnable(GL_DEPTH_TEST);
-		
+
 		// 1st PASS: depth maps, one per shadow casting light
 		Camera* cam = scene.getActiveCamera();
 		glm::vec3 front = glm::normalize(cam->cameraFront);
@@ -258,11 +265,11 @@ int main() {
 			for (auto& sl : spotLights)
 				sl->renderShadowPass(planarDepthShader, objects);
 		}
-		
+
 		// 2nd PASS: the scene, captured into the post-processing buffer
 		const glm::vec3 background = showSkybox ? SKY_BACKGROUND : MONO_BACKGROUND;
 		scene.setWindowColor(background.r, background.g, background.b, 1.0f);
-		
+
 		post.resize(Scene::SCR_WIDTH, Scene::SCR_HEIGHT);
 		post.beginSceneCapture();
 		scene.update();
@@ -272,11 +279,11 @@ int main() {
 
 		if (showGrid) {
 			// cut the grid out under the room so it does not fight the wooden floor
-			float hole =  5.0;
+			float hole = 5.0;
 			grid.render(gridShader, scene.view, scene.projection,
 				scene.cameraPos, -5.0, hole);
 		}
-		
+
 		shader.activate();
 		scene.render(shader);
 		shader.setBool("shadows", shadows);
@@ -296,7 +303,7 @@ int main() {
 		}
 
 		objects.renderAll(shader);
-		
+
 		normalMapShader.activate();
 		scene.render(normalMapShader);
 		glm::mat4 model = glm::mat4(1.0f);
@@ -308,11 +315,16 @@ int main() {
 		brickwall_normal.bind();
 		renderQuad();
 
-		
+
 		lampShader.activate();
 		scene.render(lampShader);
 		objects.renderLamps(lampShader);
-		
+
+		// light shaft last: it is additive, and its march is cut off by the torch shadow map
+		if (spotLightsOn && showBeam)
+			torchBeam.render(lightConeShader, torch, scene.view, scene.projection,
+				scene.cameraPos, shadows);
+
 		ArrayObject::clear();
 
 		// 3rd PASS: blit the captured frame to the screen
@@ -325,6 +337,7 @@ int main() {
 	}
 
 	objects.cleanup();
+	torchBeam.cleanup();
 
 	sun.cleanup();
 	for (auto& pl : pointLights)
@@ -363,13 +376,16 @@ void processInput(float deltaTime, PostProcessor& post) {
 	if (Keyboard::keyWentDown(GLFW_KEY_G)) {
 		showGrid = !showGrid;
 	}
+	if (Keyboard::keyWentDown(GLFW_KEY_V)) {
+		showBeam = !showBeam;
+	}
 
 	post.handleInput();
 }
 
 ArrayObject quadVAO;
 
-void renderQuad(){
+void renderQuad() {
 	if (!quadRendered) {
 
 		// positions
@@ -406,7 +422,7 @@ void renderQuad(){
 		bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
 		bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
 
-		
+
 		// triangle2
 		edge1 = pos3 - pos1;
 		edge2 = pos4 - pos1;

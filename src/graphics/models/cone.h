@@ -12,7 +12,7 @@
 
 class ConeMesh {
 public:
-	ConeMesh(float length, float halfAngleRadius, unsigned int segments = 48);
+	ConeMesh(float length, float halfAngleRadius, unsigned int segments = 48, bool capBase = true);
 
 	~ConeMesh();
 
@@ -28,12 +28,13 @@ public:
 private:
 	void generateMesh();
 
-	void uploadMesh(std::vector<glm::vec3> &vertices, std::vector<std::uint32_t> & indices);
+	void uploadMesh(std::vector<glm::vec3>& vertices, std::vector<std::uint32_t>& indices);
 
 	float length;
 	float radius;
 	float halfAngleRaius;
 	unsigned int segments;
+	bool capBase;
 
 	GLsizei indexCount = 0;
 	ArrayObject VAO;

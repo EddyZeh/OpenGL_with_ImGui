@@ -6,8 +6,8 @@
 #include <cstdint>
 #include <stdexcept>
 
-ConeMesh::ConeMesh(float length, float halfAngleRadius, unsigned int segments)
-				  : length(length), halfAngleRaius(halfAngleRadius), segments(segments){
+ConeMesh::ConeMesh(float length, float halfAngleRadius, unsigned int segments, bool capBase)
+	: length(length), halfAngleRaius(halfAngleRadius), segments(segments), capBase(capBase) {
 
 	if (length <= 0.0 || halfAngleRadius <= 0.0f ||
 		halfAngleRadius >= glm::half_pi<float>() || segments < 3) {
@@ -20,22 +20,22 @@ ConeMesh::ConeMesh(float length, float halfAngleRadius, unsigned int segments)
 	generateMesh();
 }
 
-ConeMesh::~ConeMesh(){
+ConeMesh::~ConeMesh() {
 	VAO.cleanup();
 }
 
-void ConeMesh::draw(){
+void ConeMesh::draw() {
 	VAO.bind();
-	VAO.draw(GL_TRIANGLES, indexCount);
+	VAO.draw(GL_TRIANGLES, static_cast<GLuint>(indexCount), GL_UNSIGNED_INT, 0);
 	ArrayObject::clear();
 }
 
-void ConeMesh::generateMesh(){
+void ConeMesh::generateMesh() {
 	std::vector<glm::vec3> vertices;
 	std::vector<std::uint32_t> indices;
 
-	vertices.reserve(segments + 1);
-	indices.reserve(segments + 3);
+	vertices.reserve(segments + 2);
+	indices.reserve(segments * 6);
 
 	// Apex vertices (vertices[0])
 	vertices.emplace_back(0.0, 0.0, 0.0);
@@ -64,11 +64,26 @@ void ConeMesh::generateMesh(){
 		indices.push_back(curr);
 	}
 
+	// Same winding rule: counter-clockwise seen from outside (+Z), so the normal points away from the apex
+	if (capBase) {
+		const unsigned int centre = static_cast<unsigned int>(vertices.size());
+		vertices.emplace_back(0.0f, 0.0f, length);
+
+		for (unsigned int i = 0; i < segments; i++) {
+			const unsigned int curr = i + 1;
+			const unsigned int next = (i + 1) % segments + 1;
+
+			indices.push_back(centre);
+			indices.push_back(curr);
+			indices.push_back(next);
+		}
+	}
+
 	indexCount = static_cast<GLsizei>(indices.size());
 	uploadMesh(vertices, indices);
 }
 
-void ConeMesh::uploadMesh(std::vector<glm::vec3> &vertices, std::vector<std::uint32_t> &indices){
+void ConeMesh::uploadMesh(std::vector<glm::vec3>& vertices, std::vector<std::uint32_t>& indices) {
 	VAO.generate();
 	VAO["VBO"] = BufferObject(GL_ARRAY_BUFFER);
 	VAO["EBO"] = BufferObject(GL_ELEMENT_ARRAY_BUFFER);
@@ -79,7 +94,7 @@ void ConeMesh::uploadMesh(std::vector<glm::vec3> &vertices, std::vector<std::uin
 	VAO["EBO"].bind();
 	VAO["EBO"].setData<std::uint32_t>(static_cast<GLuint>(indices.size()), indices.data(), GL_STATIC_DRAW);
 
-	VAO["VBO"].setAttPointer<glm::vec3>(0, 3, GL_FLOAT, 3, 0);
+	VAO["VBO"].setAttPointer<float>(0, 3, GL_FLOAT, 3, 0);
 
 	ArrayObject::clear();
 }
