@@ -1,0 +1,9 @@
+Fonts bundled with The Escape Room (copied from the Dear ImGui repository, misc/fonts):
+
+Roboto-Medium.ttf   - by Christian Robertson, Apache License 2.0
+                      https://fonts.google.com/specimen/Roboto
+Cousine-Regular.ttf - by Steve Matteson, digitized data copyright (c) 2010 Google Corporation,
+                      SIL Open Font License 1.1
+                      https://fonts.google.com/specimen/Cousine
+
+If a font file is missing the game falls back to ImGui's built-in font.

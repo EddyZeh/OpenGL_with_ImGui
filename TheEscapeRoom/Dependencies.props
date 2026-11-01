@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    External libraries for TheEscapeRoom: only GLFW and Assimp.
+    (Dear ImGui core, GLAD, GLM and stb_image are bundled in .\vendor and take priority.)
+
+    MODE 1 - vcpkg (default, USE_VCPKG = true)
+        Nothing to configure here. vcpkg's MSBuild integration supplies the include paths,
+        links every installed library automatically and copies the DLLs next to the .exe.
+        Requirements (once, from a Developer Command Prompt):
+            vcpkg install glfw3:x64-windows assimp:x64-windows
+            vcpkg integrate install
+        Using a static triplet? Set VcpkgTriplet below (e.g. x64-windows-static).
+        Prefer manifest mode? Set VCPKG_MANIFEST to true - vcpkg.json in this folder lists the ports.
+
+    MODE 2 - manual folders (USE_VCPKG = false)
+        Point DEPS_DIR (or each path below) at a folder laid out as include\, lib\, bin\.
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+
+  <PropertyGroup Label="UserMacros">
+    <USE_VCPKG Condition="'$(USE_VCPKG)'==''">true</USE_VCPKG>
+    <VCPKG_MANIFEST Condition="'$(VCPKG_MANIFEST)'==''">false</VCPKG_MANIFEST>
+    <DEPS_DIR Condition="'$(DEPS_DIR)'==''">C:\OpenGL</DEPS_DIR>
+
+    <!-- true: also copy the engine's sample models (~190 MB) next to the exe, for trying model replacement -->
+    <COPY_ENGINE_MODELS>false</COPY_ENGINE_MODELS>
+  </PropertyGroup>
+
+  <!-- ===== vcpkg: let the integration do everything ===== -->
+  <PropertyGroup Condition="'$(USE_VCPKG)'=='true'">
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgAutoLink>true</VcpkgAutoLink>
+    <VcpkgApplocalDeps>true</VcpkgApplocalDeps>
+    <VcpkgEnableManifest Condition="'$(VCPKG_MANIFEST)'=='true'">true</VcpkgEnableManifest>
+    <!-- <VcpkgTriplet>x64-windows-static</VcpkgTriplet> -->
+
+    <GLFW_INCLUDE_DIR></GLFW_INCLUDE_DIR>
+    <GLFW_LIB_DIR></GLFW_LIB_DIR>
+    <GLFW_LIB></GLFW_LIB>
+    <ASSIMP_INCLUDE_DIR></ASSIMP_INCLUDE_DIR>
+    <ASSIMP_LIB_DIR></ASSIMP_LIB_DIR>
+    <ASSIMP_LIB></ASSIMP_LIB>
+    <ASSIMP_BIN_DIR></ASSIMP_BIN_DIR>
+  </PropertyGroup>
+
+  <!-- ===== manual folders ===== -->
+  <PropertyGroup Condition="'$(USE_VCPKG)'!='true'">
+    <GLFW_INCLUDE_DIR>$(DEPS_DIR)\include</GLFW_INCLUDE_DIR>
+    <GLFW_LIB_DIR>$(DEPS_DIR)\lib</GLFW_LIB_DIR>
+    <GLFW_LIB>glfw3.lib</GLFW_LIB>
+    <ASSIMP_INCLUDE_DIR>$(DEPS_DIR)\include</ASSIMP_INCLUDE_DIR>
+    <ASSIMP_LIB_DIR>$(DEPS_DIR)\lib</ASSIMP_LIB_DIR>
+    <ASSIMP_LIB>assimp-vc143-mt.lib</ASSIMP_LIB>
+    <ASSIMP_BIN_DIR>$(DEPS_DIR)\bin</ASSIMP_BIN_DIR>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="USE_VCPKG"><Value>$(USE_VCPKG)</Value></BuildMacro>
+    <BuildMacro Include="VCPKG_MANIFEST"><Value>$(VCPKG_MANIFEST)</Value></BuildMacro>
+    <BuildMacro Include="DEPS_DIR"><Value>$(DEPS_DIR)</Value></BuildMacro>
+    <BuildMacro Include="COPY_ENGINE_MODELS"><Value>$(COPY_ENGINE_MODELS)</Value></BuildMacro>
+  </ItemGroup>
+</Project>
